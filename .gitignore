@@ -1,0 +1,6 @@
+
+.idea
+*.pyc
+work
+package
+/extras/netbeans/

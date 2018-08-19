@@ -1,0 +1,50 @@
+<form>
+    <field>
+        <id>tunnel.enabled</id>
+        <label>Enabled</label>
+        <type>checkbox</type>
+        <help>Enable this Autossh tunnel.</help>
+    </field>
+    <field>
+        <id>tunnel.name</id>
+        <label>Name</label>
+        <type>text</type>
+        <help>Provide a name for this tunnel.</help>
+    </field>
+    <field>
+        <id>tunnel.connection_string</id>
+        <label>Connection string</label>
+        <type>text</type>
+        <help>Provide the connection string in the same format as a regular ssh-client connection.</help>
+    </field>
+    <field>
+        <id>tunnel.connection_interface</id>
+        <label>Interface</label>
+        <type>select</type>
+        <help>Select the interface to bind this SSH connection to, this is helpful in multi-wan situations connections are required across each individual external connection.</help>
+    </field>
+    <field>
+        <id>tunnel.ssh_key</id>
+        <label>SSH key name</label>
+        <type>select</type>
+        <help>Select the SSH key by name to use for this connection.</help>
+    </field>
+    <field>
+        <id>tunnel.local_forwards</id>
+        <label>Local port forwards</label>
+        <type>text</type>
+        <help>Provide the local port forward definition in the same format as a regular ssh-client connection.</help>
+    </field>
+    <field>
+        <id>tunnel.remote_forwards</id>
+        <label>Remote port forwards</label>
+        <type>text</type>
+        <help>Provide the remote port forward definition in the same format as a regular ssh-client connection.</help>
+    </field>
+    <field>
+        <id>tunnel.description</id>
+        <label>Description</label>
+        <type>text</type>
+        <help>Free form text field available to describe this connection if required.</help>
+    </field>
+</form>

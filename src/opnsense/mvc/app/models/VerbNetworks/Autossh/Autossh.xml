@@ -1,0 +1,104 @@
+<model>
+    <mount>//VerbNetworks/autossh</mount>
+    <description>Verb Networks "Autossh" plugin</description>
+    <version>0.1.0</version>
+    <items>
+
+        <keys>
+            <key type="ArrayField">
+                <name type="TextField">
+                    <Required>Y</Required>
+                    <mask>/^([ 0-9a-zA-Z.,_]){1,128}$/u</mask>
+                    <ValidationMessage>Must provide a valid key name value</ValidationMessage>
+                </name>
+                <type type="OptionField">
+                    <Required>Y</Required>
+                    <multiple>N</multiple>
+                    <default>rsa2048</default>
+                    <OptionValues>
+                        <dsa1024>DSA-1024</dsa1024>
+                        <ecdsa256>ECDSA-256</ecdsa256>
+                        <ecdsa384>ECDSA-384</ecdsa384>
+                        <ecdsa521>ECDSA-521</ecdsa521>
+                        <ed25519>Ed25519</ed25519>
+                        <rsa1024>RSA-1024</rsa1024>
+                        <rsa2048>RSA-2048</rsa2048>
+                        <rsa4096>RSA-4096</rsa4096>
+                    </OptionValues>
+                </type>
+                <key_private type="TextField">
+                    <Required>N</Required>
+                </key_private>
+                <key_public type="TextField">
+                    <Required>N</Required>
+                </key_public>
+                <key_fingerprint type="TextField">
+                    <Required>N</Required>
+                </key_fingerprint>
+                <timestamp type="TextField">
+                    <Required>N</Required>
+                </timestamp>
+                <description type="TextField">
+                    <Required>N</Required>
+                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <ValidationMessage>Invalid description string</ValidationMessage>
+                </description>
+            </key>
+        </keys>
+
+        <tunnels type="ArrayField">
+            <tunnel>
+                <name type="TextField">
+                    <Required>Y</Required>
+                    <Mask>/^[.]{1,128}$/u</Mask>
+                    <ValidationMessage>Must provide a valid connection name</ValidationMessage>
+                </name>
+                <enabled type="BooleanField">
+                    <default>1</default>
+                    <Required>Y</Required>
+                </enabled>
+                <connection_string type="TextField">
+                    <Required>Y</Required>
+                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <ValidationMessage>Must provide a valid connection string</ValidationMessage>
+                </connection_string>
+                <connection_interface type="InterfaceField">
+                    <Required>Y</Required>
+                    <multiple>N</multiple>
+                    <filters>
+                        <enable>/^(?!0).*$/</enable>
+                        <ipaddr>/^((?).)*$/</ipaddr>
+                    </filters>
+                </connection_interface>
+                <ssh_key type="ModelRelationField">
+                    <Model>
+                        <template>
+                            <source>VerbNetworks.Autossh.Autossh</source>
+                            <items>keys.key</items>
+                            <display>Name</display>
+                        </template>
+                    </Model>
+                    <ValidationMessage>Related template not found</ValidationMessage>
+                    <Required>Y</Required>
+                </ssh_key>
+                <local_forwards type="TextField">
+                    <Required>N</Required>
+                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <ValidationMessage>Must provide valid SSH client local forwards strings</ValidationMessage>
+                </local_forwards>
+                <remote_forwards type="TextField">
+                    <Required>N</Required>
+                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <ValidationMessage>Must provide valid SSH client remote forwards strings</ValidationMessage>
+                </remote_forwards>
+                <description type="TextField">
+                    <Required>N</Required>
+                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <ValidationMessage>Invalid description string</ValidationMessage>
+                </description>
+
+            </tunnel>
+        </tunnels>
+
+    </items>
+</model>
