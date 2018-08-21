@@ -20,13 +20,13 @@
     <field>
         <id>tunnel.connection_interface</id>
         <label>Interface</label>
-        <type>select</type>
+        <type>dropdown</type>
         <help>Select the interface to bind this SSH connection to, this is helpful in multi-wan situations connections are required across each individual external connection.</help>
     </field>
     <field>
         <id>tunnel.ssh_key</id>
         <label>SSH key name</label>
-        <type>select</type>
+        <type>dropdown</type>
         <help>Select the SSH key by name to use for this connection.</help>
     </field>
     <field>

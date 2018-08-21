@@ -34,27 +34,44 @@
 </ul>
 
 <div class="tab-content content-box tab-content">
+    
     <div id="tunnels" class="tab-pane fade in active">
-        <div class="content-box" style="padding-bottom: 1.5em;">
-            {{ partial("layout_partials/base_form",['fields':tunnelsForm,'id':'frm_Tunnels'])}}
-            <div class="col-md-12">
-                <hr />
-                <button class="btn btn-primary" id="saveAction" type="button"><b>{{ lang._('Save') }}</b> <i id="saveAct_progress"></i></button>
-                <button class="btn btn-primary"  id="testAction" type="button"><b>{{ lang._('Test Credentials') }}</b></button>
-            </div>
-        </div>
+        <table id="grid-tunnels" class="table table-condensed table-hover table-striped table-responsive" data-editDialog="DialogTunnels">
+            <thead>
+            <tr>
+                <th data-column-id="enabled" data-width="6em" data-type="string" data-formatter="rowtoggle">{{ lang._('Enabled') }}</th>
+                <th data-column-id="name" data-type="string" data-visible="true">{{ lang._('Name') }}</th>
+                <th data-column-id="connection_string" data-type="string" data-visible="true">{{ lang._('Connection') }}</th>
+                <th data-column-id="local_forwards" data-type="string" data-visible="true">{{ lang._('Local Forwards') }}</th>
+                <th data-column-id="remote_forwards" data-type="string" data-visible="true">{{ lang._('Remote Forwards') }}</th>
+                <th data-column-id="commands" data-width="7em" data-formatter="commandsWithKeyAndCopy" data-sortable="false">{{ lang._('Commands') }}</th>
+                <th data-column-id="uuid" data-type="string" data-identifier="true" data-visible="false">{{ lang._('ID') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td></td>
+                <td>
+                    <button data-action="add" type="button" class="btn btn-xs btn-default"><span class="fa fa-plus"></span></button>
+                    <button data-action="deleteSelected" type="button" class="btn btn-xs btn-default"><span class="fa fa-trash-o"></span></button>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
     </div>
 
     <div id="keys" class="tab-pane fade in">
-        <table id="grid-keys" class="table table-condensed table-hover table-striped table-responsive" data-editDialog="DialogKeys" data-keyDialog="DialogKeyDetails">
+        <table id="grid-keys" class="table table-condensed table-hover table-striped table-responsive" data-editDialog="DialogKeys">
             <thead>
             <tr>
-                <th data-column-id="uuid" data-type="string" data-identifier="true" data-visible="false">{{ lang._('ID') }}</th>
                 <th data-column-id="name" data-type="string" data-visible="true">{{ lang._('Name') }}</th>
                 <th data-column-id="key_fingerprint" data-type="string" data-visible="true">{{ lang._('SSH Key Fingerprint') }}</th>
                 <th data-column-id="type" data-width="8em" data-type="string" data-visible="true">{{ lang._('Type') }}</th>
                 <th data-column-id="timestamp" data-width="14em" data-type="string" data-visible="true">{{ lang._('Created') }}</th>
-                <th data-column-id="commands" data-width="7em"   data-formatter="commands" data-sortable="false">{{ lang._('Commands') }}</th>
+                <th data-column-id="commands" data-width="7em" data-formatter="commandsWithKey" data-sortable="false">{{ lang._('Commands') }}</th>
+                <th data-column-id="uuid" data-type="string" data-identifier="true" data-visible="false">{{ lang._('ID') }}</th>
             </tr>
             </thead>
             <tbody>
@@ -109,9 +126,12 @@
 
 {# include dialogs #}
 {{ partial("layout_partials/base_dialog",['fields':formDialogKeys,'id':'DialogKeys','label':lang._('SSH key')])}}
+{{ partial("layout_partials/base_dialog",['fields':formDialogTunnels,'id':'DialogTunnels','label':lang._('SSH tunnel')])}}
 
 <style>
     div.type-info div.modal-dialog div.modal-body div.bootstrap-dialog-message {
+        padding: 0.5em;
+        border: 1px solid #999999;
         font-size: 100%;
         font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
         word-break: break-all;  
@@ -122,6 +142,39 @@
     
     $(document).ready(function() {
         
+        $("#grid-tunnels").UIBootgrid(
+            {   search:'/api/autossh/tunnels/search',
+                get:'/api/autossh/tunnels/get/',
+                set:'/api/autossh/tunnels/set/',
+                add:'/api/autossh/tunnels/add/',
+                del:'/api/autossh/tunnels/del/',
+                info:'/api/autossh/tunnels/info/',
+                toggle:'/api/autossh/tunnels/toggle/',
+                
+                options:{
+                    ajax: true,
+                    selection: true,
+                    multiSelect: true,
+                    rowCount:[10, 25, 100, -1] ,
+                    formatters:{
+                        commandsWithKeyAndCopy: function(column, row) {
+                            return  "<button type=\"button\" class=\"btn btn-xs btn-default command-info\" data-row-id=\"" + row.uuid + "\"><span class=\"fa fa-key\"></span></button> " +
+                                "<button type=\"button\" class=\"btn btn-xs btn-default command-edit\" data-row-id=\"" + row.uuid + "\"><span class=\"fa fa-pencil\"></span></button>" +
+                                "<button type=\"button\" class=\"btn btn-xs btn-default command-copy\" data-row-id=\"" + row.uuid + "\"><span class=\"fa fa-clone\"></span></button>" +
+                                "<button type=\"button\" class=\"btn btn-xs btn-default command-delete\" data-row-id=\"" + row.uuid + "\"><span class=\"fa fa-trash-o\"></span></button>";
+                        },
+                        rowtoggle: function (column, row) {
+                            if (parseInt(row[column.id], 2) == 1) {
+                                return "<span style=\"cursor: pointer;\" class=\"fa fa-check-square-o command-toggle\" data-value=\"1\" data-row-id=\"" + row.uuid + "\"></span>";
+                            } else {
+                                return "<span style=\"cursor: pointer;\" class=\"fa fa-square-o command-toggle\" data-value=\"0\" data-row-id=\"" + row.uuid + "\"></span>";
+                            }
+                        },
+                    }
+                },                
+            },
+        );
+        
         $("#grid-keys").UIBootgrid(
             {   search:'/api/autossh/keys/search',
                 get:'/api/autossh/keys/get/',
@@ -131,10 +184,12 @@
                 info:'/api/autossh/keys/info/',
                 
                 options:{
-                    //requestHandler:addRuleFilters,
+                    ajax: true,
+                    selection: true,
+                    multiSelect: true,
                     rowCount:[10, 25, 100, -1] ,
                     formatters:{
-                        commands: function (column, row) {
+                        commandsWithKey: function (column, row) {
                             return  "<button type=\"button\" class=\"btn btn-xs btn-default command-info\" data-row-id=\"" + row.uuid + "\"><span class=\"fa fa-key\"></span></button> " +
                                     "<button type=\"button\" class=\"btn btn-xs btn-default command-edit\" data-row-id=\"" + row.uuid + "\"><span class=\"fa fa-pencil\"></span></button> " +
                                     "<button type=\"button\" class=\"btn btn-xs btn-default command-delete\" data-row-id=\"" + row.uuid + "\"><span class=\"fa fa-trash-o\"></span></button>";
@@ -143,6 +198,15 @@
                 },                
             },
         );
+        
+        function setResponseMessageKeysCreate() {
+            if ($('#grid-keys tbody tr').children().length <= 1) {
+                $("#responseMsg").removeClass("hidden").removeClass("alert-danger").addClass('alert-info').html("{{ lang._('Please create an ssh-key before creating an ssh-tunnel.')}}");
+            }
+        }
+        
+        $("#grid-keys").bootgrid().on("loaded.rs.jquery.bootgrid", setResponseMessageKeysCreate);
+        $("#grid-keys").bootgrid().on("loaded.rs.jquery.bootgrid", setResponseMessageKeysCreate);
         
         $("#DialogKeys").change(function() {
             if($('#key\\.key_fingerprint').text().length >= 1) {

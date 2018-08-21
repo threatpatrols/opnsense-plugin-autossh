@@ -8,7 +8,7 @@
             <key type="ArrayField">
                 <name type="TextField">
                     <Required>Y</Required>
-                    <mask>/^([ 0-9a-zA-Z.,_]){1,128}$/u</mask>
+                    <mask>/^([0-9a-z\ \.\-\,\_\@\:]){1,128}$/i</mask>
                     <ValidationMessage>Must provide a valid key name value</ValidationMessage>
                 </name>
                 <type type="OptionField">
@@ -40,26 +40,26 @@
                 </timestamp>
                 <description type="TextField">
                     <Required>N</Required>
-                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <mask>/^([0-9a-z\ \.\-\,\_\@\:]){0,1024}$/i</mask>
                     <ValidationMessage>Invalid description string</ValidationMessage>
                 </description>
             </key>
         </keys>
 
-        <tunnels type="ArrayField">
-            <tunnel>
-                <name type="TextField">
-                    <Required>Y</Required>
-                    <Mask>/^[.]{1,128}$/u</Mask>
-                    <ValidationMessage>Must provide a valid connection name</ValidationMessage>
-                </name>
+        <tunnels>
+            <tunnel type="ArrayField">
                 <enabled type="BooleanField">
                     <default>1</default>
                     <Required>Y</Required>
                 </enabled>
+                <name type="TextField">
+                    <Required>Y</Required>
+                    <mask>/^([0-9a-z\ \.\-\,\_\@\:]){1,128}$/i</mask>
+                    <ValidationMessage>Must provide a valid connection name</ValidationMessage>
+                </name>
                 <connection_string type="TextField">
                     <Required>Y</Required>
-                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <mask>/^([0-9a-z\ \.\-\,\_\@\:]){1,1024}$/i</mask>
                     <ValidationMessage>Must provide a valid connection string</ValidationMessage>
                 </connection_string>
                 <connection_interface type="InterfaceField">
@@ -72,28 +72,28 @@
                 </connection_interface>
                 <ssh_key type="ModelRelationField">
                     <Model>
-                        <template>
+                        <key>
                             <source>VerbNetworks.Autossh.Autossh</source>
                             <items>keys.key</items>
-                            <display>Name</display>
-                        </template>
+                            <display>name</display>
+                        </key>
                     </Model>
-                    <ValidationMessage>Related template not found</ValidationMessage>
+                    <ValidationMessage>Related ssh-key not found</ValidationMessage>
                     <Required>Y</Required>
                 </ssh_key>
                 <local_forwards type="TextField">
                     <Required>N</Required>
-                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <mask>/^([0-9a-z\ \.\-\_\:]){0,1024}$/i</mask>
                     <ValidationMessage>Must provide valid SSH client local forwards strings</ValidationMessage>
                 </local_forwards>
                 <remote_forwards type="TextField">
                     <Required>N</Required>
-                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <mask>/^([0-9a-z\ \.\-\_\:]){0,1024}$/i</mask>
                     <ValidationMessage>Must provide valid SSH client remote forwards strings</ValidationMessage>
                 </remote_forwards>
                 <description type="TextField">
                     <Required>N</Required>
-                    <Mask>/^[.]{1,1024}$/u</Mask>
+                    <mask>/^([0-9a-z\ \.\-\,\_\@\:]){0,1024}$/i</mask>
                     <ValidationMessage>Invalid description string</ValidationMessage>
                 </description>
 

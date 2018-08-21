@@ -29,12 +29,10 @@
 
 namespace VerbNetworks\Autossh;
 
-class TunnelsController extends \OPNsense\Base\IndexController
+class StatusController extends \OPNsense\Base\IndexController
 {
     public function indexAction()
     {
-        $this->view->pick('VerbNetworks/Autossh/tunnels');
-        $this->view->formDialogTunnels = $this->getForm('tunnels');
-        $this->view->formDialogKeys = $this->getForm('keys');
+        $this->view->pick('VerbNetworks/Autossh/status');
     }
 }

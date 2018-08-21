@@ -90,22 +90,19 @@ class KeysController extends ApiControllerBase
     
     public function infoAction($uuid = null)
     {
-        $model = new Autossh();
+        $info = array(
+            'title' => 'SSH public key',
+            'message' => 'Unknown ssh-key',
+        );
         if ($uuid != null) {
+            $model = new Autossh();
             $node = $model->getNodeByReference('keys.key.'.$uuid);
             if ($node != null) {
-                $data = $node->getNodes();
-                $info = array(
-                    'title' => 'SSH public key',
-                    'message' => base64_decode($data['key_public']),
-                );
-                return $info;
+                $node_data = $node->getNodes();
+                $info['message'] = base64_decode($node_data['key_public']);
             }
-        } else {
-            $node = $model->keys->key->add();
-            return array('key' => $node->getNodes());
         }
-        return array();
+        return $info;
     }
 
     public function setAction($uuid)
