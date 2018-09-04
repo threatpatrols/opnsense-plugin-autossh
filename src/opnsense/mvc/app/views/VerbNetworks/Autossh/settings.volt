@@ -269,7 +269,7 @@
         }
         
         function checkApplyChangesMessage() {
-            ajaxGet(url='/api/autossh/service/is_config_change', sendData={}, callback=function(data,status) {
+            ajaxGet(url='/api/autossh/service/isConfigChange', sendData={}, callback=function(data,status) {
                 if (status === 'success') {
                     if (data.data === true) {
                         $('#applyChangesMessage').removeClass('hidden');

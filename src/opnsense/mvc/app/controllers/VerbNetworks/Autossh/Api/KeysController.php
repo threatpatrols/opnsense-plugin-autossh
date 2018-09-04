@@ -50,14 +50,17 @@ class KeysController extends ApiControllerBase
             'name'
         );
         
-        foreach($grid_data['rows'] as $row_index => $row_data) {
-            foreach($row_data as $key => $value) {
-                if($key === 'timestamp') {
+        foreach ($grid_data['rows'] as $row_index => $row_data) {
+            foreach ($row_data as $key => $value) {
+                if ($key === 'timestamp') {
                     $grid_data['rows'][$row_index][$key] = date('Y-m-d H:i:s', $value);
-                }
-                elseif($key === 'key_fingerprint') {
+                } elseif ($key === 'key_fingerprint') {
                     $fingerprint_elements = explode(' ', $value);
-                    $grid_data['rows'][$row_index][$key] = str_replace('md5:', '', strtolower($fingerprint_elements[1]));
+                    $grid_data['rows'][$row_index][$key] = str_replace(
+                        'md5:',
+                        '',
+                        strtolower($fingerprint_elements[1])
+                    );
                 }
             }
         }
@@ -74,7 +77,7 @@ class KeysController extends ApiControllerBase
                 $data = $node->getNodes();
                 
                 // munge the data a little bit making it easier to use
-                $data['timestamp'] = date('Y-m-d H:i:s',$data['timestamp']);
+                $data['timestamp'] = date('Y-m-d H:i:s', $data['timestamp']);
                 $fingerprint_elements = explode(' ', $data['key_fingerprint']);
                 $data['key_fingerprint'] = str_replace('md5:', '', strtolower($fingerprint_elements[1]));
                 unset($data['key_private']);
@@ -102,7 +105,7 @@ class KeysController extends ApiControllerBase
                 $key_public = base64_decode($node_data['key_public']);
 
                 // replace host_id comment with this key uuid
-                $key_public = preg_replace('/host_id:.*?$/',$uuid, $key_public);
+                $key_public = preg_replace('/host_id:.*?$/', $uuid, $key_public);
                 
                 // prepend ssh-key restrictions
                 $key_public = 'command="",no-agent-forwarding,no-pty,no-user-rc,no-X11-forwarding '.$key_public;
@@ -143,7 +146,6 @@ class KeysController extends ApiControllerBase
             'message' => 'Invalid request'
         );
         if ($this->request->isPost() && $this->request->hasPost('key')) {
-            
             $model = new Autossh();
             $node = $model->keys->key->add();
             $post_data = $this->request->getPost('key');
@@ -153,14 +155,14 @@ class KeysController extends ApiControllerBase
             if (count($validate['validations']) == 0) {
                 $backend = new Backend();
                 $backend_response = json_decode(trim(
-                    $backend->configdRun(
-                        sprintf('autossh key_gen --key_type=%s',$post_data['type'])
-                    )
-                ),true);
+                    $backend->configdRun(sprintf(
+                        'autossh key_gen --key_type=%s',
+                        $post_data['type']
+                    ))
+                ), true);
                 if (empty($backend_response)) {
                     $response['message'] = 'Error calling autossh key_gen via configd';
-                }
-                elseif ($backend_response['status'] === 'success') {
+                } elseif ($backend_response['status'] === 'success') {
                     $node->setNodes(array_merge($post_data, $backend_response['data']));
                     $response = $this->save($model, $node, 'key');
                 }
@@ -217,5 +219,4 @@ class KeysController extends ApiControllerBase
         }
         return $result;
     }
-    
 }

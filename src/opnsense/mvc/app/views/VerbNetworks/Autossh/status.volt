@@ -73,7 +73,7 @@
         
         var gridopt = {
             ajax: true,
-            url: '/api/autossh/service/connection_status',
+            url: '/api/autossh/service/connectionStatus',
             navigation: 1,
             selection: false,
             multiSelect: false,

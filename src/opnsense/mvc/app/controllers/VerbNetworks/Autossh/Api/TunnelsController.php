@@ -46,15 +46,19 @@ class TunnelsController extends ApiControllerBase
         
         $grid_data = $grid->fetchBindRequest(
             $this->request,
-            array('enabled', 'user', 'hostname', 'port', 'bind_interface', 'ssh_key', 'local_forward', 'remote_forward', 'dynamic_forward'),
+            array(
+                'enabled', 'user', 'hostname', 'port', 'bind_interface', 'ssh_key',
+                'local_forward', 'remote_forward', 'dynamic_forward'
+            ),
             'hostname'
         );
         
-        if(isset($grid_data['rows'])) {
-            foreach($grid_data['rows'] as $index => $tunnel) {
+        if (isset($grid_data['rows'])) {
+            foreach ($grid_data['rows'] as $index => $tunnel) {
                 $grid_data['rows'][$index]['connection'] = $tunnel['user'].'@'.$tunnel['hostname'];
-                if(!empty($tunnel['port'])) {
-                    $grid_data['rows'][$index]['connection'] = $grid_data['rows'][$index]['connection'].':'.$tunnel['port'];
+                if (!empty($tunnel['port'])) {
+                    $grid_data['rows'][$index]['connection'] =
+                         $grid_data['rows'][$index]['connection'].':'.$tunnel['port'];
                 }
             }
         }
@@ -90,17 +94,17 @@ class TunnelsController extends ApiControllerBase
             $configd_run = sprintf(
                 'autossh host_keys --connection_uuid=%s',
                 escapeshellarg($uuid)
-            );            
+            );
             $backend = new Backend();
             $response = json_decode($backend->configdRun($configd_run), true);
             
-            if ($response['status'] === 'success' && isset($response['data']) && count($response['data']) > 0 ) {
+            if ($response['status'] === 'success' && isset($response['data']) && count($response['data']) > 0) {
                 $info['status'] = 'success'; // required for afterExecuteRoute() trap below
                 $info['message'] = '';
-                foreach($response['data'] as $key_value) {
+                foreach ($response['data'] as $key_value) {
                     $info['message'] = $info['message'].htmlspecialchars($key_value).'<br><br>';
                 }
-                $info['message'] = preg_replace('/\<br\>\<br\>$/','',$info['message']);
+                $info['message'] = preg_replace('/\<br\>\<br\>$/', '', $info['message']);
             } else {
                 $info['message'] = $response['message'];
             }
@@ -137,7 +141,6 @@ class TunnelsController extends ApiControllerBase
             'message' => 'Invalid request'
         );
         if ($this->request->isPost() && $this->request->hasPost('tunnel')) {
-            
             $model = new Autossh();
             $node = $model->tunnels->tunnel->add();
             $post_data = $this->request->getPost('tunnel');
@@ -198,10 +201,11 @@ class TunnelsController extends ApiControllerBase
                     $node->setNodes($toggle_data);
                     $response = $this->save($model, $node, 'tunnel');
                     
-                    if($response['status'] == 'success' && $toggle_data['enabled'] == '0') {
+                    if ($response['status'] == 'success' && $toggle_data['enabled'] == '0') {
                         $backend = new Backend();
                         $configd_run = sprintf(
-                            'autossh stop_tunnel %s', escapeshellarg($uuid)
+                            'autossh stop_tunnel %s',
+                            escapeshellarg($uuid)
                         );
                         $backend->configdRun($configd_run);
                     }
@@ -242,11 +246,13 @@ class TunnelsController extends ApiControllerBase
     
     public function afterExecuteRoute($dispatcher)
     {
-        // In an the limited situation of an "info" action with "success" status we catch 
-        // the regular afterExecuteRoute() in order to prevent htmlspecialchars() being 
-        // universally applied because we do require the ability to inject html and the 
-        // content gets wrapped by htmlspecialchars() in the "info" function.
-        if($dispatcher->getActionName() === "info") {
+        /**
+         * In an the limited situation of an "info" action with "success" status we catch
+         * the regular afterExecuteRoute() in order to prevent htmlspecialchars() being
+         * universally applied because we do require the ability to inject html and the
+         * content gets wrapped by htmlspecialchars() in the "info" function.
+         */
+        if ($dispatcher->getActionName() === "info") {
             $data = $dispatcher->getReturnedValue();
             if (is_array($data) && isset($data['status']) && $data['status'] === 'success') {
                 $this->response->setContentType('application/json', 'UTF-8');
@@ -257,5 +263,4 @@ class TunnelsController extends ApiControllerBase
         // all other situations get passed to the parent as usual.
         return parent::afterExecuteRoute($dispatcher);
     }
-    
 }
