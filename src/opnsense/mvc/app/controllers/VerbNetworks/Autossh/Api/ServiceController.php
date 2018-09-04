@@ -209,7 +209,11 @@ class ServiceController extends ApiControllerBase
                     
                     $last_healthy = (int)strtotime($backend_result['data']['last_healthy']);
                     if (empty($last_healthy)) {
-                        $last_healthy = null;
+                        if(!empty($backend_result['data']['uptime'])) {
+                            $last_healthy = -1;
+                        } else {
+                            $last_healthy = null;
+                        }
                     } else {
                         $last_healthy = (int)(time() - $last_healthy);
                     }

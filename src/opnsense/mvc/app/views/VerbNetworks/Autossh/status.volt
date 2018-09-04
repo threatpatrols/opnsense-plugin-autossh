@@ -130,7 +130,8 @@
                             }
                             else if(key==='last_healthy') {
                                 if (parseInt(value) < 0) {
-                                    value = '{{ lang._("Unknown") }}';
+                                    value = '{{ lang._("pending") }}';
+                                    span_class = 'text-warning';
                                 } else {
                                     value = moment.duration(parseInt(value), 'seconds').asSeconds() + ' ' + '{{ lang._("sec ago") }}';
                                     if (parseInt(value) > 65) {
