@@ -24,14 +24,168 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #}
+<script src="/ui/js/moment-with-locales.min.js"></script>
 
 <div class="alert alert-info hidden" role="alert" id="responseMsg"></div>
 
+<div class="content-box">
+    <div class="content-box-main">
+        <div class="table-responsive">
 
+            <div  class="col-sm-12">
+                <div class="table-responsive">
+                    <table id="grid-connectionstatus" class="table table-condensed table-hover table-striped table-responsive">
+                        <thead>
+                        <tr>
+                            <th data-column-id="uuid" data-type="string" data-identifier="true" data-visible="false">{{ lang._('Id') }}</th>
+                            <th data-column-id="connection" data-type="string">{{ lang._('Connection') }}</th>
+                            <th data-column-id="bind_interface" data-width="6em" data-type="string">{{ lang._('Interface') }}</th>
+                            <th data-column-id="ssh_key" data-type="string">{{ lang._('SSH Key') }}</th>
+                            <th data-column-id="forwards" data-formatter="forwards_list" data-type="string">{{ lang._('Forwards') }}</th>
+                            <th data-column-id="status" data-formatter="status_list" data-type="string">{{ lang._('Status') }}</th>
+                            <th data-column-id="actions" data-sortable="false" data-width="8em" data-type="string" data-formatter="actions">{{ lang._('Actions') }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <br>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{{ partial("layout_partials/base_dialog_processing") }}
+
+<style>
+    #grid-connectionstatus ul.autossh_forwards, #grid-connectionstatus ul.autossh_status {
+        padding-left: 1em;
+    }
+</style>
 
 <script>
     
     $(document).ready(function() {
+        
+        var gridopt = {
+            ajax: false,
+            navigation: 1,
+            selection: false,
+            multiSelect: false,
+            rowCount:[-1],
+            formatters:{
+                actions: function(column, row) {
+                    var status = JSON.parse(row.status);
+                    var html = '<div>';
+                    if (status.enabled !== true) {
+                        html += '<span class="btn btn-xs btn-default disabled"><i class="fa fa-play fa-fw"></i></span>&nbsp;' +
+                                '<span class="btn btn-xs btn-default disabled"><i class="fa fa-refresh fa-fw"></i></span>&nbsp;' +
+                                '<span class="btn btn-xs btn-default disabled"><i class="fa fa-stop fa-fw"></i></span>';
+                    }
+                    else {
+                        if (status.uptime !== null) {
+                        html += '<span class="label label-opnsense label-opnsense-xs label-success"><i class="fa fa-play fa-fw"></i></span>&nbsp;' +
+                                '<span data-service="autossh" data-action="restart" data-id="'+ row.uuid +'" class="btn btn-xs btn-default" onclick="service_action(this)"><i class="fa fa-refresh fa-fw"></i></span>&nbsp;' +
+                                '<span data-service="autossh" data-action="stop" data-id="'+ row.uuid +'" class="btn btn-xs btn-default" onclick="service_action(this)"><i class="fa fa-stop fa-fw"></i></span>' ;
+                        }
+                        else {
+                        html += '<span class="label label-opnsense label-opnsense-xs label-danger"><i class="fa fa-stop fa-fw"></i></span>&nbsp;' +
+                                '<span data-service="autossh" data-action="start" data-id="'+ row.uuid +'" class="btn btn-xs btn-default" onclick="service_action(this)"><i class="fa fa-play fa-fw"></i></span>';
+                        }
+                    }
+                    html += '</div>';
+                    return html;
+                },
+                forwards_list: function(column, row) {
+                    var forwards = JSON.parse(row.forwards);
+                    var html = '<ul class="autossh_forwards">';
+                    for (var key in forwards) {
+                        if (forwards[key].length > 0) {
+                            html += '<li><b>' + key.charAt(0).toUpperCase() + ':</b> <code>' + forwards[key] + '</code></li>';
+                        }
+                    }
+                    html += '</ul>';
+                    return html;
+                },
+                status_list: function(column, row) {
+                    var status = JSON.parse(row.status);
+                    var html = '<ul class="autossh_status">';
+                    for (var key in status) {
+                        if(status[key] !== null) {
+                            var value = status[key];
+                            var name = key.charAt(0).toUpperCase() + key.slice(1);
+                            if(key==='uptime') {
+                                value = moment.duration(parseInt(value), 'seconds').humanize();
+                            }
+                            else if(key==='starts') {
+                                value = (parseInt(value) - 1);
+                                name = '{{ lang._("Fails") }}';
+                            }
+                            else if(key==='last_healthy') {
+                                if (parseInt(value) < 0) {
+                                    value = '{{ lang._("Unknown") }}';
+                                } else {
+                                    value = moment.duration(parseInt(value), 'seconds').asSeconds() + ' ' + '{{ lang._("sec ago") }}';
+                                }
+                                name = '{{ lang._("Healthy") }}';
+                            }
+                            html += '<li><b>' + name + ':</b> ' + value + '</li>';
+                        }
+                    }
+                    html += '</ul>';
+                    return html;
+                }
+            }
+        };
+        
+        function load_table() {
+            ajaxGet(url='/api/autossh/service/connection_status', sendData={}, callback=function (data, status) {
+                if (status === "success") {
+                    $("#grid-connectionstatus").bootgrid('destroy');
+                    var html = [];
+                    var row = '<tr>';
+                    $.each(data, function (status_row, status_data) {
+                        var fields = ['uuid', 'connection', 'bind_interface', 'ssh_key', 'forwards', 'status', 'actions'];
+                        for (var fields_index = 0; fields_index < fields.length; fields_index++) {
+                            var status_field = fields[fields_index];
+                            var status_value = status_data[status_field];
+                            if (typeof status_value === 'string') {
+                                row += '<td>' + status_value + '</td>';
+                            } 
+                            else if (typeof status_value === 'object') {
+                                row += '<td>' + JSON.stringify(status_value) + '</td>';
+                            } 
+                            else {
+                                row += '<td></td>';
+                            }
+                        }
+                        row += '</tr>';
+                        html.push(row);
+                    });
+                    $("#grid-connectionstatus > tbody").html(html.join(''));
+                    $("#grid-connectionstatus").bootgrid(gridopt);
+                }
+            });
+        };
+        
+        $('#grid-connectionstatus').bootgrid('destroy');
+        $('#grid-connectionstatus').bootgrid(gridopt);
+        
+        load_table();
+        
+    });
+    
+    function service_action(element) {
+        $("#OPNsenseStdWaitDialog").modal('show');
+        $.post(
+            '/api/autossh/service/' + $(element).data('action'), 
+            {'id': $(element).data('id')}, 
+            function(data) {
+                location.reload(true);
+            }
+        );
     }
         
 </script>

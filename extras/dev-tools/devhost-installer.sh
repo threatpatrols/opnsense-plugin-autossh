@@ -46,8 +46,8 @@ dev_install()
     # deploy_www
     rsync -a --no-o --no-g "${local_opnsense_path}/../www/diag_logs_autossh.php" "${remote}:/usr/local/www/diag_logs_autossh.php"
 
-    ssh $remote "configctl template reload VerbNetworks/Autossh"
     ssh $remote "/usr/local/etc/rc.configure_plugins; service configd restart"
+    ssh $remote "configctl template reload VerbNetworks/Autossh; configctl autossh config_helper"
 }
 
 dev_uninstall()

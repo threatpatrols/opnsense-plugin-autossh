@@ -27,31 +27,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-function autossh_enabled()
-{
-    $model_autossh = new \VerbNetworks\Autossh\Autossh();
-    //return $model_autossh->settings->Enabled->__toString() == "1";
-    return true;
-}
+use \VerbNetworks\Autossh\Autossh;
 
 function autossh_services()
 {
     $services = array();
-
-    if (!autossh_enabled()) {
-        return $services;
+    $model = new Autossh();
+    $node = $model->getNodeByReference('tunnels.tunnel');
+    
+    if ($node != null) {
+        foreach($node->getNodes() as $tunnel_uuid=>$tunnel) {
+            if((int)$tunnel['enabled'] > 0) {
+                $description = $tunnel['user'] .'@'. $tunnel['hostname'];
+                if(!empty($tunnel['port'])) {
+                    $description = $description.':'.$tunnel['port'];
+                }
+                $services[] = array(
+                    'id' => $tunnel_uuid,
+                    'name' => 'autossh',
+                    'pidfile' => '/var/run/autossh.'.$tunnel_uuid.'.pid',
+                    'description' => htmlspecialchars($description),
+                    'configd' => array(
+                        'start' => array('autossh start_tunnel '.$tunnel_uuid),
+                        'stop' => array('autossh stop_tunnel '.$tunnel_uuid),
+                        'restart' => array('autossh restart_tunnel '.$tunnel_uuid),
+                    ),
+                );
+            }
+        }
     }
-
-    $services[] = array(
-        'description' => gettext('Autossh Tunnels'),
-        'configd' => array(
-            'restart' => array('autossh restart'),
-            'start' => array('autossh start'),
-            'stop' => array('autossh stop'),
-        ),
-        'name' => 'autossh',
-        'pidfile' => '/var/run/autossh-daemon.pid'
-    );
 
     return $services;
 }
@@ -61,7 +65,7 @@ function autossh_syslog()
     $logfacilities = array();
 
     $logfacilities['autossh'] = array(
-        'facility' => array('autossh'),
+        'facility' => array('autosshd', 'autossh-interface'),
     );
 
     return $logfacilities;

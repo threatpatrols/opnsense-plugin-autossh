@@ -1,2 +1,2 @@
-configsync:/etc/rc.conf.d/configsync
-configsync.conf:/usr/local/etc/configsync/configsync.conf
+autossh:/etc/rc.conf.d/autossh
+autossh.conf:/usr/local/etc/autossh/autossh.conf

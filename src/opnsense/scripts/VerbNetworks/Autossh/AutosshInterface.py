@@ -28,52 +28,88 @@
 """
 
 import os
+import re
 import time
 import json
 import base64
 import random
+import syslog
 import argparse
 import subprocess
 from calendar import timegm
+
+from AutosshConfigHelper import AutosshConfigHelper, AutosshConfigHelperException
 
 
 class AutosshInterfaceException(Exception):
     pass
 
 
-class AutosshInterface():
+class AutosshInterface(object):
+
+    name = 'autossh-interface'
+
+    ssh_config_file = None
+    system_config_file = None
+    data_model_file = None
+
+    def __init__(self, ssh_config_file=None, system_config_file=None, data_model_file=None):
+        syslog.openlog(self.name, logoption=syslog.LOG_DAEMON, facility=syslog.LOG_LOCAL4)
+
+        if ssh_config_file is None:
+            self.ssh_config_file = '/usr/local/etc/autossh/autossh.conf'
+
+        if system_config_file is None:
+            self.system_config_file = '/conf/config.xml'
+
+        if data_model_file is None:
+            self.data_model_file = '/usr/local/opnsense/mvc/app/models/VerbNetworks/Autossh/Autossh.xml'
 
     def main(self):
-
         parser = argparse.ArgumentParser(description='Autossh tunnel management interface')
         parser.add_argument('action',
             type=str,
-            choices=['key_gen', 'connection_test', 'connection_create', 'connection_destroy', 'connection_status'],
+            choices=['key_gen', 'config_helper', 'host_keys', 'connection_status'],
             help='AutosshInterface action request'
         )
 
-        # key_gen
+        # Actions: key_gen
         parser.add_argument('--key_type', type=str, help='Type of SSH key to generate')
 
-        # connection_test, connection_create, connection_destroy, connection_status
+        # Actions: config_helper
+        parser.add_argument('--ssh_config', type=str, help='Overwrites the default ssh_config file (autossh.conf) file location')
+        parser.add_argument('--system_config', type=str, help='Overwrites the default system config file (config.xml) file location')
+        parser.add_argument('--data_model', type=str, help='Overwrites the default autossh data model file (Autossh.xml) file location')
+
+        # Actions: host_keys, connection_status
         parser.add_argument('--connection_uuid', type=str, help='UUID of the Autossh tunnel connection to use')
 
         args = parser.parse_args()
+
+        if args.ssh_config is not None:
+            self.ssh_config_file = args.ssh_config
+
+        if args.system_config is not None:
+            self.system_config_file = args.system_config
+
+        if args.data_model is not None:
+            self.data_model_file = args.data_model
+
         if args.action == 'key_gen' and args.key_type is not None:
             return self.key_gen(key_type=args.key_type)
-        elif args.action == 'connection_test' and args.connection_uuid is not None:
-            return self.connection_test(connection_uuid=args.connection_uuid)
-        elif args.action == 'connection_create' and args.connection_uuid is not None:
-            return self.connection_create(connection_uuid=args.connection_uuid)
-        elif args.action == 'connection_destroy' and args.connection_uuid is not None:
-            return self.connection_destroy(connection_uuid=args.connection_uuid)
+
+        elif args.action == 'config_helper':
+            return self.config_helper()
+
+        elif args.action == 'host_keys' and args.connection_uuid is not None:
+            return self.host_keys(connection_uuid=args.connection_uuid)
+
         elif args.action == 'connection_status' and args.connection_uuid is not None:
             return self.connection_status(connection_uuid=args.connection_uuid)
 
-        return {'status': 'fail', 'message': 'Unable to invoke AutosshInterface'}
+        return {'status': 'fail', 'message': 'Unable to invoke AutosshInterface, incorrect arguments'}
 
     def key_gen(self, key_type, fingerprint_type='md5'):
-
         temp_keyfile = os.path.join(
             '/tmp',
             'autossh-keygen.{}'.format(''.join(random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(8)))
@@ -122,24 +158,114 @@ class AutosshInterface():
             }
         }
 
-    def shell_command(self, command):
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-        if stderr is not None and len(stderr) > 0:
-            raise AutosshInterfaceException(stderr.strip())
-        return stdout
+    def config_helper(self):
+        try:
+            AutosshConfigHelper(self.ssh_config_file, self.system_config_file, self.data_model_file).process()
+        except AutosshConfigHelperException as e:
+            return {'status': 'fail', 'message': 'unable to config_helper the ssh_config file', 'data': str(e)}
+        return {'status': 'success', 'message': 'config_helper of ssh_config file complete'}
 
-    def connection_test(self, connection_uuid):
-        return {'status': 'fail', 'message': 'function connection_test not yet implemented', 'data': connection_uuid}
+    def host_keys(self, connection_uuid, filemask='/var/db/autossh/{}.known_hosts'):
+        filename = filemask.format(connection_uuid)
+        if not os.path.isfile(filename):
+            return {
+                'status': 'fail',
+                'message': 'No known_hosts file found for {}, is this a new connection?'.format(connection_uuid),
+            }
+        with open(filename, 'r') as f:
+            known_host_lines = f.readlines()
 
-    def connection_create(self, connection_uuid):
-        return {'status': 'fail', 'message': 'function connection_create not yet implemented', 'data': connection_uuid}
+        known_host_keys = []
+        for known_host_line in known_host_lines:
+            values = known_host_line.rstrip().split(' ')
+            values.pop(0)
+            known_host_keys.append(' '.join(values))
 
-    def connection_destroy(self, connection_uuid):
-        return {'status': 'fail', 'message': 'function connection_destroy not yet implemented', 'data': connection_uuid}
+        return {
+            'status': 'success',
+            'message': 'Found {} host keys found for {}'.format(len(known_host_keys), connection_uuid),
+            'data': known_host_keys
+        }
 
-    def connection_status(self, connection_uuid):
-        return {'status': 'fail', 'message': 'function connection_status not yet implemented', 'data': connection_uuid}
+    def connection_status(self, connection_uuid, filemask='/var/run/autossh.{}.{}'):
+
+        status = {
+            'enabled': False,
+            'pids': {
+                'daemon': None,
+                'autossh': None,
+                'ssh': None
+            },
+            'starts': None,
+            'uptime': None,
+            'last_healthy': None,
+            'tunnel_interface': None
+        }
+
+        infofile = filemask.format(connection_uuid, 'info')
+        pidfile = filemask.format(connection_uuid, 'pid')
+
+        # enabled
+        if os.path.isfile(self.ssh_config_file):
+            with open(self.ssh_config_file, 'r') as f:
+                for line in f.readlines():
+                    if line.startswith('Host ') and connection_uuid in line:
+                        status['enabled'] = True
+                        break
+
+        # pids - daemon
+        daemon_command = None
+        if os.path.isfile(pidfile):
+            with open(pidfile, 'r') as f:
+                pid = f.read()
+                daemon_command = self.get_pid_command(pid)
+                if daemon_command is not None and len(daemon_command) > 0:
+                    status['pids']['daemon'] = int(pid)
+
+        # pids - autossh
+        autossh_command = None
+        if daemon_command is not None and len(daemon_command) > 0:
+            result = re.search('\[(.*)\]', daemon_command)
+            if result is not None:
+                pid = result.group(1)
+                autossh_command = self.get_pid_command(pid)
+                if autossh_command is not None and len(autossh_command) > 0:
+                    status['pids']['autossh'] = int(pid)
+
+        # pids - ssh & starts
+        if autossh_command is not None and len(autossh_command) > 0:
+            result = re.search('parent of (\d+?) \((\d+?)\) ', autossh_command)
+            if result is not None:
+                pid = result.group(1)
+                status['starts'] = int(result.group(2))
+                ssh_command = self.get_pid_command(pid)
+                if ssh_command is not None and len(ssh_command) > 0:
+                    status['pids']['ssh'] = int(pid)
+
+        # uptime & tunnel_interface
+        if os.path.isfile(infofile):
+            with open(infofile, 'r') as f:
+                for infoline in f.readlines():
+                    if infoline.startswith('timestamp'):
+                        parts = infoline.strip().split(' ')
+                        status['uptime'] = int(time.time() - int(parts[1]))
+                    elif infoline.startswith('tunnel_interface') and 'NONE' not in infoline:
+                        parts = infoline.strip().split(' ')
+                        status['tunnel_interface'] = parts[1]
+
+        # last_healthy
+        log_search_command = 'clog /var/log/autossh.log | grep "autosshd\[{}\]" | grep "autossh\[{}\]" | ' \
+                             'grep "connection ok" | tail -n1'.format(status['pids']['daemon'], status['pids']['autossh'])
+        log_line = self.shell_command(log_search_command)
+        result = re.search('^(.*) (.*?) autosshd\[', log_line)
+        if result is not None:
+            status['last_healthy'] = result.group(1)
+
+        return {
+            'status': 'success',
+            'message': 'Connection data collected',
+            'data': status
+        }
 
     def get_system_hostid(self):
         hostid = '00000000-0000-0000-0000-000000000000'
@@ -148,7 +274,17 @@ class AutosshInterface():
                 hostid = f.read().strip()
         return hostid
 
-    def response_output(self, message, status='success', data=None):
+    def shell_command(self, command):
+        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        if stderr is not None and len(stderr) > 0:
+            raise AutosshInterfaceException(stderr.strip())
+        return stdout
+
+    def get_pid_command(self, pid):
+        return self.shell_command('ps -o command= -p {}'.format(pid))
+
+    def response_output(self, message, status='success', data=None, log_fails=True):
 
         if status.lower() == 'okay' or status.lower() == 'ok':
             status = 'success'
@@ -163,11 +299,15 @@ class AutosshInterface():
             response_data['data'] = data
 
         print (json.dumps(response_data))
+
+        if log_fails is True and status == 'fail':
+            self.log('error', message, data=data)
+
         return response_data
 
     def normalize_timestamp(self, input):
 
-        # oh just kill me now :( every part of this just feels horrible
+        # oh just kill me now :( every part of this is just horrible
 
         try:
             input = str(input)
@@ -176,13 +316,16 @@ class AutosshInterface():
             if '-' in input and 'T' in input and ':' in input and '.' in input and input.endswith('Z'):
                 t = time.strptime(input.split('.')[0], '%Y-%m-%dT%H:%M:%S')
 
+            # 2018-08-14 07:28:05+00:00
+            elif '-' in input and ' ' in input and ':' in input and '.' not in input and input.endswith('+00:00'):
+                t = time.strptime(input, '%Y-%m-%d %H:%M:%S+00:00')
+
             # 2018-08-04T07:44:45Z
             elif '-' in input and 'T' in input and ':' in input and '.' not in input and input.endswith('Z'):
                 t = time.strptime(input, '%Y-%m-%dT%H:%M:%SZ')
 
             # 20180804T074445Z
-            elif '-' not in input and 'T' in input and ':' not in input and '.' not in input and input.endswith(
-                    'Z'):
+            elif '-' not in input and 'T' in input and ':' not in input and '.' not in input and input.endswith('Z'):
                 t = time.strptime(input, '%Y%m%dT%H%M%SZ')
 
             # 20180804Z074445
@@ -201,6 +344,37 @@ class AutosshInterface():
             return input
 
         return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timegm(t)))
+
+    def log(self, level, message, data=None):
+        level = level.lower()
+
+        if level not in ['debug', 'info', 'warn', 'error', 'fatal']:
+            level = 'info'
+
+        log_event = {
+            'level': level,
+            'message': message,
+            'timestamp': time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
+        }
+        syslog_message = message
+
+        if data is not None:
+            log_event['data'] = data
+            if type(data) is dict and 'data' in data:
+                syslog_message += ' {}'.format(json.dumps(data['data']))
+            else:
+                syslog_message += ' {}'.format(json.dumps(data))
+
+        syslog_map = {
+            'debug': syslog.LOG_DEBUG,
+            'info': syslog.LOG_INFO,
+            'warn': syslog.LOG_WARNING,
+            'error': syslog.LOG_ERR,
+            'fatal': syslog.LOG_CRIT,
+        }
+
+        syslog.syslog(syslog_map[level], syslog_message)
+        return log_event
 
 
 if __name__ == '__main__':

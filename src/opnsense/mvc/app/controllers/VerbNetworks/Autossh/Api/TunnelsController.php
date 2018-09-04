@@ -46,9 +46,19 @@ class TunnelsController extends ApiControllerBase
         
         $grid_data = $grid->fetchBindRequest(
             $this->request,
-            array('enabled', 'name', 'connection_string', 'connection_interface', 'ssh_key', 'local_forwards', 'remote_forwards'),
-            'name'
+            array('enabled', 'user', 'hostname', 'port', 'bind_interface', 'ssh_key', 'local_forward', 'remote_forward', 'dynamic_forward'),
+            'hostname'
         );
+        
+        if(isset($grid_data['rows'])) {
+            foreach($grid_data['rows'] as $index => $tunnel) {
+                $grid_data['rows'][$index]['connection'] = $tunnel['user'].'@'.$tunnel['hostname'];
+                if(!empty($tunnel['port'])) {
+                    $grid_data['rows'][$index]['connection'] = $grid_data['rows'][$index]['connection'].':'.$tunnel['port'];
+                }
+            }
+        }
+        
         return $grid_data;
     }
 
@@ -58,12 +68,14 @@ class TunnelsController extends ApiControllerBase
         if ($uuid != null) {
             $node = $model->getNodeByReference('tunnels.tunnel.'.$uuid);
             if ($node != null) {
-                $data = $node->getNodes();
-                return array('tunnel' => $data);
+                $data = array('tunnel' => $node->getNodes());
+                return $data;
             }
         } else {
             $node = $model->tunnels->tunnel->add();
-            return array('tunnel' => $node->getNodes());
+            $data = array('tunnel' => $node->getNodes());
+            $data['tunnel']['known_host'] = 'new connection, no known host value';
+            return $data;
         }
         return array();
     }
@@ -71,22 +83,26 @@ class TunnelsController extends ApiControllerBase
     public function infoAction($uuid = null)
     {
         $info = array(
-            'title' => 'SSH tunnel connection authorized_key string',
-            'message' => 'Unknown ssh-key',
+            'title' => 'SSH server known host keys',
+            'message' => null,
         );
         if ($uuid != null) {
-            $model = new Autossh();
-            $node = $model->getNodeByReference('tunnels.tunnel.'.$uuid);
-            if ($node != null) {
-                $node_data = $node->getNodes();
-                foreach($node_data['ssh_key'] as $ssh_key_uuid=>$ssh_key_attr) {
-                    if((int)$ssh_key_attr['selected'] > 0 ) {
-                        $ssh_key_node = $model->getNodeByReference('keys.key.'.$ssh_key_uuid);
-                        $ssh_key_node_data = $ssh_key_node->getNodes();
-                        $info['message'] = base64_decode($ssh_key_node_data['key_public']);
-                        break;
-                    }
+            $configd_run = sprintf(
+                'autossh host_keys --connection_uuid=%s',
+                escapeshellarg($uuid)
+            );            
+            $backend = new Backend();
+            $response = json_decode($backend->configdRun($configd_run), true);
+            
+            if ($response['status'] === 'success' && isset($response['data']) && count($response['data']) > 0 ) {
+                $info['status'] = 'success'; // required for afterExecuteRoute() trap below
+                $info['message'] = '';
+                foreach($response['data'] as $key_value) {
+                    $info['message'] = $info['message'].htmlspecialchars($key_value).'<br><br>';
                 }
+                $info['message'] = preg_replace('/\<br\>\<br\>$/','',$info['message']);
+            } else {
+                $info['message'] = $response['message'];
             }
         }
         return $info;
@@ -101,9 +117,9 @@ class TunnelsController extends ApiControllerBase
         );
         if ($this->request->isPost() && $this->request->hasPost('tunnel')) {
             $model = new Autossh();
-            if ($uuid != null) {
+            if ($uuid !== null) {
                 $node = $model->getNodeByReference('tunnels.tunnel.'.$uuid);
-                if ($node != null) {
+                if ($node !== null) {
                     $post_data = $this->request->getPost('tunnel');
                     $node->setNodes($post_data);
                     $response = $this->save($model, $node, 'tunnel');
@@ -151,6 +167,7 @@ class TunnelsController extends ApiControllerBase
                 if ($model->tunnels->tunnel->del($uuid)) {
                     $model->serializeToConfig();
                     Config::getInstance()->save();
+                    $model->setConfigChangeOn();
                     $response['result'] = 'deleted';
                     $response['message'] = 'Okay, item deleted';
                 } else {
@@ -173,22 +190,24 @@ class TunnelsController extends ApiControllerBase
             $model = new Autossh();
             if ($uuid != null) {
                 $node = $model->getNodeByReference('tunnels.tunnel.'.$uuid);
-                if ($node != null) {
+                if (!empty($node)) {
                     $node_data = $node->getNodes();
                     $toggle_data = array(
-                        'enabled' => ((int)$node_data['enabled'] > 0 ? 0 : 1)
+                        'enabled' => ((int)$node_data['enabled'] > 0 ? '0' : '1')
                     );
                     $node->setNodes($toggle_data);
                     $response = $this->save($model, $node, 'tunnel');
+                    
+                    if($response['status'] == 'success' && $toggle_data['enabled'] == '0') {
+                        $backend = new Backend();
+                        $configd_run = sprintf(
+                            'autossh stop_tunnel %s', escapeshellarg($uuid)
+                        );
+                        $backend->configdRun($configd_run);
+                    }
                 }
             }
         }
-        return $response;
-    }
-    
-    public function testAction()
-    {
-        $response = array();
         return $response;
     }
     
@@ -198,25 +217,45 @@ class TunnelsController extends ApiControllerBase
         if (count($result['validations']) == 0) {
             $model->serializeToConfig();
             Config::getInstance()->save();
-            $result["status"] = "success";
-            $result["result"] = "saved";
-            unset($result["validations"]);
+            $model->setConfigChangeOn();
+            $result['status'] = 'success';
+            $result['result'] = 'saved';
+            unset($result['validations']);
         }
         return $result;
     }
     
     private function validate($model, $node = null, $reference = null)
     {
-        $result = array("status"=>"fail","validations" => array());
+        $result = array('status'=>'fail','validations' => array());
         $validation_messages = $model->performValidation();
         foreach ($validation_messages as $field => $message) {
             if ($node != null) {
                 $index = str_replace($node->__reference, $reference, $message->getField());
-                $result["validations"][$index] = $message->getMessage();
+                $result['validations'][$index] = $message->getMessage();
             } else {
-                $result["validations"][$message->getField()] = $message->getMessage();
+                $result['validations'][$message->getField()] = $message->getMessage();
             }
         }
         return $result;
     }
+    
+    public function afterExecuteRoute($dispatcher)
+    {
+        // In an the limited situation of an "info" action with "success" status we catch 
+        // the regular afterExecuteRoute() in order to prevent htmlspecialchars() being 
+        // universally applied because we do require the ability to inject html and the 
+        // content gets wrapped by htmlspecialchars() in the "info" function.
+        if($dispatcher->getActionName() === "info") {
+            $data = $dispatcher->getReturnedValue();
+            if (is_array($data) && isset($data['status']) && $data['status'] === 'success') {
+                $this->response->setContentType('application/json', 'UTF-8');
+                $this->response->setContent(json_encode($data));
+                return $this->response->send();
+            }
+        }
+        // all other situations get passed to the parent as usual.
+        return parent::afterExecuteRoute($dispatcher);
+    }
+    
 }

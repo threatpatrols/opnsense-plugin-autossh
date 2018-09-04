@@ -99,7 +99,15 @@ class KeysController extends ApiControllerBase
             $node = $model->getNodeByReference('keys.key.'.$uuid);
             if ($node != null) {
                 $node_data = $node->getNodes();
-                $info['message'] = base64_decode($node_data['key_public']);
+                $key_public = base64_decode($node_data['key_public']);
+
+                // replace host_id comment with this key uuid
+                $key_public = preg_replace('/host_id:.*?$/',$uuid, $key_public);
+                
+                // prepend ssh-key restrictions
+                $key_public = 'command="",no-agent-forwarding,no-pty,no-user-rc,no-X11-forwarding '.$key_public;
+
+                $info['message'] = $key_public;
             }
         }
         return $info;

@@ -29,6 +29,6 @@
 
 $logfile = '/var/log/autossh.log';
 $logclog = true;
-$service_hook = 'autossh';
+// $service_hook = 'autossh';
 
 require_once 'diag_logs_template.inc';

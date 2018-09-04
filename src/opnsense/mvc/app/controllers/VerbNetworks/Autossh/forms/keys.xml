@@ -9,7 +9,7 @@
         <id>key.type</id>
         <label>Type</label>
         <type>dropdown</type>
-        <help>Select the type of SSH key to be generated.</help>
+        <help>Select the type of SSH key to be generated - can't be modified after the key has been generated.</help>
     </field>
     <field>
         <id>key.description</id>

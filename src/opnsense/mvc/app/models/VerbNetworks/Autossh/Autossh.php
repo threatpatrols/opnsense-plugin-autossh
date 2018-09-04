@@ -28,9 +28,26 @@
 */
 
 namespace VerbNetworks\Autossh;
-
 use OPNsense\Base\BaseModel;
 
 class Autossh extends BaseModel
 {
+    public $config_status_filename = '/var/run/autossh.reload_required';
+    
+    public function isConfigChange() {
+        return file_exists($this->config_status_filename);
+    }
+    
+    public function setConfigChangeOn() {
+        touch($this->config_status_filename);
+        return true;
+    }
+    
+    public function setConfigChangeOff() {
+        if(file_exists($this->config_status_filename)) {
+            unlink($this->config_status_filename);
+        }
+        return true;
+    }
+    
 }
