@@ -97,9 +97,73 @@
 
             <div  class="col-md-12">
                 <h1>Autossh</h1>
-                <p>Hello world</p>
-
-
+                <p>
+                    The Autossh plugin for OPNsense is a tool for establishing, maintaining and managing 
+                    reliable SSH tunnels with remote hosts.  It can be used to solve a wide range of 
+                    connection challenges through the (sometimes creative) use of TCP port-forwards.
+                </p>
+                
+                <h2>Tunnel configuration</h2>
+                <h3>Local Forward</h3>
+                <p>
+                    add content here
+                </p>
+                
+                <h3>Remote Forward</h3>
+                <p>
+                    add content here
+                </p>
+                
+                <h3>Dynamic Forward</h3>
+                <p>
+                    add content here
+                </p>
+                
+                <h3>Gateway Ports</h3>
+                <p>
+                    add content here
+                </p>
+                
+                <h3>Strict Host Key Checking</h3>
+                <p>
+                    add content here
+                </p>
+                
+                <h2>Key management</h2>
+                <h3>Public Key</h3>
+                <p>
+                    add content here
+                </p>
+                
+                <h3>Private Key</h3>
+                <p>
+                    add content here
+                </p>
+                
+                <hr />
+                
+                <h2>Features</h2>
+                <ul>
+                    <li>Default ssh-key permissions that prevent unwanted remote ssh-server shell access abuses.</li>
+                    <li>Ability to define local-forward and remote-forward TCP tunnels.</li>
+                    <li>Ability to define local network SOCKS proxy via a remote host (aka dynamic-forward).</li>
+                    <li>Ability to bind outbound ssh connections to different (external) interfaces.</li>
+                    <li>Ability to configure many (27x) of the ssh-client connection parameters, including all cryptographic options.</li>
+                    <li>Ability to observe the health status of the tunnel at a glance.</li>
+                    <li>Can rely on Autossh to reestablish a tunnel after a connectivity outage.</li>
+                </ul>
+                
+                <h2>Various use cases</h2>
+                <ul>
+                    <li>Provide remote network access to a site that has no public addresses, such as when ISPs use NAT.</li>
+                    <li>Ensure redundant multipath remote access via primary and secondary connections via interface binding.</li>
+                    <li>Create your own "privacy" VPN system for all local network users using a SOCKS proxy (dynamic-forward) to a remote system.</li>
+                    <li>Provide local network access to remote system services such as a SMTP relay or another SSH service.</li>
+                    <li>Provide remote system access to a local network services such as a database or RDP service.</li>
+                    <li>Provide access remote system access to other remote network acting as a middle-man TCP-port connector.</li>
+                    <li>... just because you can, does not mean you should.</li>
+                </ul>
+                
                 <hr />
                 
                 <h1>Author</h1>
