@@ -19,7 +19,7 @@ autossh_enable=${autossh_enable:-"NO"}
 autossh_loglevel=${autossh_loglevel:-1}
 autossh_monitor_port_min=${autossh_monitor_port_min:-0}
 autossh_monitor_port_max=${autossh_monitor_port_max:-0}
-autossh_monitor_poll_interval=${autossh_monitor_poll_interval:-600}
+autossh_monitor_poll_interval=${autossh_monitor_poll_interval:-60}
 autossh_configfile=${autossh_configfile:-"/usr/local/etc/autossh/autossh.conf"}
 
 autossh_flags="-N -y -F ${autossh_configfile}"

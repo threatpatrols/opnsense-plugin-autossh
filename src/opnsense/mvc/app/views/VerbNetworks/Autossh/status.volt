@@ -69,23 +69,29 @@
     
     $(document).ready(function() {
         
+        $('#grid-connectionstatus').bootgrid('destroy');
+        
         var gridopt = {
-            ajax: false,
+            ajax: true,
+            url: '/api/autossh/service/connection_status',
             navigation: 1,
             selection: false,
             multiSelect: false,
             rowCount:[-1],
+            ajaxSettings: {
+                method: "GET",
+                cache: false
+            },
             formatters:{
                 actions: function(column, row) {
-                    var status = JSON.parse(row.status);
                     var html = '<div>';
-                    if (status.enabled !== true) {
+                    if (row.status.enabled !== true) {
                         html += '<span class="btn btn-xs btn-default disabled"><i class="fa fa-play fa-fw"></i></span>&nbsp;' +
                                 '<span class="btn btn-xs btn-default disabled"><i class="fa fa-refresh fa-fw"></i></span>&nbsp;' +
                                 '<span class="btn btn-xs btn-default disabled"><i class="fa fa-stop fa-fw"></i></span>';
                     }
                     else {
-                        if (status.uptime !== null) {
+                        if (row.status.uptime !== null) {
                         html += '<span class="label label-opnsense label-opnsense-xs label-success"><i class="fa fa-play fa-fw"></i></span>&nbsp;' +
                                 '<span data-service="autossh" data-action="restart" data-id="'+ row.uuid +'" class="btn btn-xs btn-default" onclick="service_action(this)"><i class="fa fa-refresh fa-fw"></i></span>&nbsp;' +
                                 '<span data-service="autossh" data-action="stop" data-id="'+ row.uuid +'" class="btn btn-xs btn-default" onclick="service_action(this)"><i class="fa fa-stop fa-fw"></i></span>' ;
@@ -99,23 +105,22 @@
                     return html;
                 },
                 forwards_list: function(column, row) {
-                    var forwards = JSON.parse(row.forwards);
                     var html = '<ul class="autossh_forwards">';
-                    for (var key in forwards) {
-                        if (forwards[key].length > 0) {
-                            html += '<li><b>' + key.charAt(0).toUpperCase() + ':</b> <code>' + forwards[key] + '</code></li>';
+                    for (var key in row.forwards) {
+                        if (row.forwards[key].length > 0) {
+                            html += '<li><b>' + key.charAt(0).toUpperCase() + ':</b> <code>' + row.forwards[key] + '</code></li>';
                         }
                     }
                     html += '</ul>';
                     return html;
                 },
                 status_list: function(column, row) {
-                    var status = JSON.parse(row.status);
                     var html = '<ul class="autossh_status">';
-                    for (var key in status) {
-                        if(status[key] !== null) {
-                            var value = status[key];
+                    for (var key in row.status) {
+                        if(row.status[key] !== null) {
+                            var value = row.status[key];
                             var name = key.charAt(0).toUpperCase() + key.slice(1);
+                            var span_class = '';
                             if(key==='uptime') {
                                 value = moment.duration(parseInt(value), 'seconds').humanize();
                             }
@@ -128,10 +133,13 @@
                                     value = '{{ lang._("Unknown") }}';
                                 } else {
                                     value = moment.duration(parseInt(value), 'seconds').asSeconds() + ' ' + '{{ lang._("sec ago") }}';
+                                    if (parseInt(value) > 65) {
+                                        span_class = 'text-danger';
+                                    }
                                 }
                                 name = '{{ lang._("Healthy") }}';
                             }
-                            html += '<li><b>' + name + ':</b> ' + value + '</li>';
+                            html += '<li><span class="' + span_class + '"><b>' + name + ':</b> ' + value + '</span></li>';
                         }
                     }
                     html += '</ul>';
@@ -140,40 +148,15 @@
             }
         };
         
-        function load_table() {
-            ajaxGet(url='/api/autossh/service/connection_status', sendData={}, callback=function (data, status) {
-                if (status === "success") {
-                    $("#grid-connectionstatus").bootgrid('destroy');
-                    var html = [];
-                    var row = '<tr>';
-                    $.each(data, function (status_row, status_data) {
-                        var fields = ['uuid', 'connection', 'bind_interface', 'ssh_key', 'forwards', 'status', 'actions'];
-                        for (var fields_index = 0; fields_index < fields.length; fields_index++) {
-                            var status_field = fields[fields_index];
-                            var status_value = status_data[status_field];
-                            if (typeof status_value === 'string') {
-                                row += '<td>' + status_value + '</td>';
-                            } 
-                            else if (typeof status_value === 'object') {
-                                row += '<td>' + JSON.stringify(status_value) + '</td>';
-                            } 
-                            else {
-                                row += '<td></td>';
-                            }
-                        }
-                        row += '</tr>';
-                        html.push(row);
-                    });
-                    $("#grid-connectionstatus > tbody").html(html.join(''));
-                    $("#grid-connectionstatus").bootgrid(gridopt);
-                }
-            });
+        function reload_per_timecycle(milliseconds){
+            $('#grid-connectionstatus').bootgrid('reload');
+            setTimeout(function(){
+                reload_per_timecycle(milliseconds);
+            },milliseconds);
         };
         
-        $('#grid-connectionstatus').bootgrid('destroy');
-        $('#grid-connectionstatus').bootgrid(gridopt);
-        
-        load_table();
+        $("#grid-connectionstatus").bootgrid(gridopt);
+        reload_per_timecycle(10000);
         
     });
     

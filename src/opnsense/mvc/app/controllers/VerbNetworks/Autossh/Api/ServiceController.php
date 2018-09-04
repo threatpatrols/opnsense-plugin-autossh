@@ -165,7 +165,13 @@ class ServiceController extends ApiControllerBase
     
     public function connection_statusAction()
     {
-        $response = array();
+        $response = array(
+            'current' => 1,
+            'rowCount' => null,
+            'rows' => array(),
+            'total' => null
+        );
+        
         if ($this->request->isGet()) {
             
             $model = new Autossh();
@@ -216,7 +222,7 @@ class ServiceController extends ApiControllerBase
                     );
                 }
                 
-                $response[] = array(
+                $response['rows'][] = array(
                     'uuid' => $tunnel['uuid'], 
                     'connection' => htmlspecialchars($connection), 
                     'bind_interface' => $tunnel['bind_interface'], 
@@ -226,6 +232,9 @@ class ServiceController extends ApiControllerBase
                 );
             }
         }
+        
+        $response['rowCount'] = count($response['rows']);
+        $response['total'] = count($response['rows']);
         
         return $response;
     }

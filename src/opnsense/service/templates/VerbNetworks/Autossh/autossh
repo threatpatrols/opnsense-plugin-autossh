@@ -20,6 +20,7 @@ autossh_enable="YES"
 autossh_loglevel=5
 autossh_monitor_port_min=60000
 autossh_monitor_port_max=65000
+# NB: autossh_monitor_poll_interval must be 60 seconds or less
 autossh_monitor_poll_interval=60
 autossh_configfile="/usr/local/etc/autossh/autossh.conf"
 {% else %}
