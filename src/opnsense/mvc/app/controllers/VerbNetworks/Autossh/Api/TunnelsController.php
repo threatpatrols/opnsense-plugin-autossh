@@ -91,12 +91,9 @@ class TunnelsController extends ApiControllerBase
             'message' => null,
         );
         if ($uuid != null) {
-            $configd_run = sprintf(
-                'autossh host_keys --connection_uuid=%s',
-                escapeshellarg($uuid)
-            );
             $backend = new Backend();
-            $response = json_decode($backend->configdRun($configd_run), true);
+            $configd_run = sprintf('autossh host_keys --connection_uuid=%s', escapeshellarg($uuid));
+            $response = json_decode(trim($backend->configdRun($configd_run)), true);
             
             if ($response['status'] === 'success' && isset($response['data']) && count($response['data']) > 0) {
                 $info['status'] = 'success'; // required for afterExecuteRoute() trap below
@@ -167,6 +164,7 @@ class TunnelsController extends ApiControllerBase
         if ($this->request->isPost()) {
             $model = new Autossh();
             if ($uuid != null) {
+                $this->stopTunnel($uuid);
                 if ($model->tunnels->tunnel->del($uuid)) {
                     $model->serializeToConfig();
                     Config::getInstance()->save();
@@ -202,17 +200,19 @@ class TunnelsController extends ApiControllerBase
                     $response = $this->save($model, $node, 'tunnel');
                     
                     if ($response['status'] == 'success' && $toggle_data['enabled'] == '0') {
-                        $backend = new Backend();
-                        $configd_run = sprintf(
-                            'autossh stop_tunnel %s',
-                            escapeshellarg($uuid)
-                        );
-                        $backend->configdRun($configd_run);
+                        $this->stopTunnel($uuid);
                     }
                 }
             }
         }
         return $response;
+    }
+    
+    private function stopTunnel($uuid)
+    {
+        $backend = new Backend();
+        $configd_run = sprintf('autossh stop_tunnel %s', escapeshellarg($uuid));
+        $backend->configdRun($configd_run);
     }
     
     private function save($model, $node = null, $reference = null)

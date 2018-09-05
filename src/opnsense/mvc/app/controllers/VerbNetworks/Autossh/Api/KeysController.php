@@ -93,6 +93,7 @@ class KeysController extends ApiControllerBase
     
     public function infoAction($uuid = null)
     {
+        $ssh_key_restrictions = 'command="",no-agent-forwarding,no-pty,no-user-rc,no-X11-forwarding';
         $info = array(
             'title' => 'SSH public key',
             'message' => 'Unknown ssh-key',
@@ -108,7 +109,7 @@ class KeysController extends ApiControllerBase
                 $key_public = preg_replace('/host_id:.*?$/', $uuid, $key_public);
                 
                 // prepend ssh-key restrictions
-                $key_public = 'command="",no-agent-forwarding,no-pty,no-user-rc,no-X11-forwarding '.$key_public;
+                $key_public = $ssh_key_restrictions.' '.$key_public;
 
                 $info['message'] = $key_public;
             }
@@ -154,12 +155,8 @@ class KeysController extends ApiControllerBase
             $validate = $this->validate($model, $node, 'key');
             if (count($validate['validations']) == 0) {
                 $backend = new Backend();
-                $backend_response = json_decode(trim(
-                    $backend->configdRun(sprintf(
-                        'autossh key_gen --key_type=%s',
-                        $post_data['type']
-                    ))
-                ), true);
+                $configd_run = sprintf('autossh key_gen --key_type=%s', escapeshellarg($post_data['type']));
+                $backend_response = json_decode(trim($backend->configdRun($configd_run)), true);
                 if (empty($backend_response)) {
                     $response['message'] = 'Error calling autossh key_gen via configd';
                 } elseif ($backend_response['status'] === 'success') {
@@ -176,7 +173,7 @@ class KeysController extends ApiControllerBase
 
     public function delAction($uuid = null)
     {
-        $response = array("status"=>"fail", "message" => "Invalid request");
+        $response = array('status'=>'fail', 'message' => 'Invalid request');
         if ($this->request->isPost()) {
             $model = new Autossh();
             if ($uuid != null) {
@@ -198,23 +195,23 @@ class KeysController extends ApiControllerBase
         if (count($result['validations']) == 0) {
             $model->serializeToConfig();
             Config::getInstance()->save();
-            $result["status"] = "success";
-            $result["result"] = "saved";
-            unset($result["validations"]);
+            $result['status'] = 'success';
+            $result['result'] = 'saved';
+            unset($result['validations']);
         }
         return $result;
     }
     
     private function validate($model, $node = null, $reference = null)
     {
-        $result = array("status"=>"fail","validations" => array());
+        $result = array('status'=>'fail', 'validations' => array());
         $validation_messages = $model->performValidation();
         foreach ($validation_messages as $field => $message) {
             if ($node != null) {
                 $index = str_replace($node->__reference, $reference, $message->getField());
-                $result["validations"][$index] = $message->getMessage();
+                $result['validations'][$index] = $message->getMessage();
             } else {
-                $result["validations"][$message->getField()] = $message->getMessage();
+                $result['validations'][$message->getField()] = $message->getMessage();
             }
         }
         return $result;

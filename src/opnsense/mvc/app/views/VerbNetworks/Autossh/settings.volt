@@ -103,42 +103,62 @@
                     connection challenges through the (sometimes creative) use of TCP port-forwards.
                 </p>
                 
+                <!--
+                
                 <h2>Tunnel configuration</h2>
                 <h3>Local Forward</h3>
                 <p>
-                    add content here
+                    Describe how to expose a remote TCP port into the local network
                 </p>
                 
                 <h3>Remote Forward</h3>
                 <p>
-                    add content here
+                    Describe how to expose a TCP port in the local network at a remote system
                 </p>
                 
                 <h3>Dynamic Forward</h3>
                 <p>
-                    add content here
+                    Describe how to write an expression that creates a SOCKS proxy for the local network
                 </p>
                 
                 <h3>Gateway Ports</h3>
                 <p>
-                    add content here
+                    Describe the situations where this is important and required
                 </p>
                 
                 <h3>Strict Host Key Checking</h3>
                 <p>
-                    add content here
+                    Describe what this is all about and the interaction with the "Update Host Keys" property
                 </p>
                 
                 <h2>Key management</h2>
-                <h3>Public Key</h3>
-                <p>
-                    add content here
-                </p>
-                
                 <h3>Private Key</h3>
                 <p>
-                    add content here
+                    Describe how keys are stored and the potential risks
+                    Describe the key types and the sometimes limited support for newer key types
                 </p>
+                
+                <h3>Public Key</h3>
+                <p>
+                    Describe how to access it
+                    Describe the importance of the key permission prefix to prevent abuse
+                    Describe where to place the public key value on the remote system
+                </p>
+                
+                <h3>External Keys</h3>
+                <p>
+                    Describe that no external keys are currently possible as a matter of preventing unwanted problem scenarios
+                    Willing to listen to feedback and introduce a key import feature if warranted
+                </p>
+                
+                <h2>Connection status</h2>
+                <p>
+                    Notes about forwards
+                    Description of status attributes
+                    Describe the autossh health check with a "ping" every minute
+                </p>
+                
+                -->
                 
                 <hr />
                 
