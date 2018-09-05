@@ -5,7 +5,7 @@ set -e
 remote_host=${1}
 remote_user=root
 
-opnsense_plugins_repo_path=$(realpath $(dirname $(realpath $0))/../../../opnsense-plugins)
+opnsense_plugins_repo_path=$(realpath $(dirname $(realpath $0))/../../../opnsense-plugins-autossh)
 autossh_plugin_repo_path=$(realpath $(dirname $(realpath $0))/../../)
 autossh_opnsense_plugins_subpath='net/autossh'
 remote_base_path='/root/opnsense-plugins'

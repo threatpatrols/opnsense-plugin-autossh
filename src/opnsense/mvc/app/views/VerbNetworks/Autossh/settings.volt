@@ -103,8 +103,9 @@
                     connection challenges through the (sometimes creative) use of TCP port-forwards.
                 </p>
                 
-                <!--
+                <!-- documentation work in progress -->
                 
+                <!--
                 <h2>Tunnel configuration</h2>
                 <h3>Local Forward</h3>
                 <p>
