@@ -40,7 +40,7 @@ dev_install()
     done
 
     # deploy_service
-    rsync -a --no-o --no-g "${local_opnsense_path}/../etc/rc.d/autossh" "${remote}:/usr/local/etc/rc.d/autossh"
+    rsync -a --no-o --no-g "${local_opnsense_path}/../etc/rc.d/opnsense-autossh" "${remote}:/usr/local/etc/rc.d/opnsense-autossh"
     rsync -a --no-o --no-g "${local_opnsense_path}/../etc/inc/plugins.inc.d/autossh.inc" "${remote}:/usr/local/etc/inc/plugins.inc.d/autossh.inc"
 
     # deploy_www
@@ -63,7 +63,7 @@ dev_uninstall()
 
     ssh $remote "touch /usr/local/opnsense/mvc/app/cache/file; rm -f /usr/local/opnsense/mvc/app/cache/*"
 
-    ssh $remote "rm -f /usr/local/etc/rc.d/autossh"
+    ssh $remote "rm -f /usr/local/etc/rc.d/opnsense-autossh"
     ssh $remote "rm -f /usr/local/etc/inc/plugins.inc.d/autossh.inc"
     ssh $remote "rm -f /usr/local/www/diag_logs_autossh.php"
     ssh $remote "rm -f /usr/local/opnsense/service/conf/actions.d/actions_autossh.conf"
