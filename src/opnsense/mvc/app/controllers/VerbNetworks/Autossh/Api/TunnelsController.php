@@ -54,7 +54,7 @@ class TunnelsController extends ApiControllerBase
         );
         
         if (isset($grid_data['rows'])) {
-            foreach ($grid_data['rows'] as $index=>$tunnel) {
+            foreach ($grid_data['rows'] as $index => $tunnel) {
                 $grid_data['rows'][$index]['connection'] = $tunnel['user'].'@'.$tunnel['hostname'];
                 if (!empty($tunnel['port'])) {
                     $grid_data['rows'][$index]['connection'] =
@@ -148,9 +148,9 @@ class TunnelsController extends ApiControllerBase
                 return $this->save($model, $node, 'tunnel');
             } else {
                 return array(
-                    'status'=>'fail', 
-                    'result'=>'failed', 
-                    'validations'=>$validate['validations'], 
+                    'status'=>'fail',
+                    'result'=>'failed',
+                    'validations'=>$validate['validations'],
                     'message'=>'Validation errors'
                 );
             }
@@ -235,7 +235,7 @@ class TunnelsController extends ApiControllerBase
     {
         $result = array('status'=>'fail','validations'=>array());
         $validation_messages = $model->performValidation();
-        foreach ($validation_messages as $field=>$message) {
+        foreach ($validation_messages as $field => $message) {
             if ($node != null) {
                 $index = str_replace($node->__reference, $reference, $message->getField());
                 $result['validations'][$index] = $message->getMessage();

@@ -58,14 +58,14 @@ class ServiceController extends ApiControllerBase
             
             $backend_template_response = trim($backend->configdRun('template reload VerbNetworks/Autossh'));
             if (strtoupper($backend_template_response) !== 'OK') {
-                return array('status'=>'fail', 
+                return array('status'=>'fail',
                     'message'=>'Error while reloading template files, review configd logs for more information');
             }
             
             $backend_autossh_response = trim($backend->configdRun('autossh config_helper'));
             if (empty($backend_autossh_response) || strpos($backend_autossh_response, 'success') === false) {
                 if (empty($backend_autossh_response)) {
-                    return array('status'=>'fail', 
+                    return array('status'=>'fail',
                         'message'=>'Unknown error occured while performing autossh config_helper, '
                         . 'review configd logs for more information');
                 }

@@ -50,8 +50,8 @@ class KeysController extends ApiControllerBase
             'name'
         );
         
-        foreach ($grid_data['rows'] as $row_index=>$row_data) {
-            foreach ($row_data as $key=>$value) {
+        foreach ($grid_data['rows'] as $row_index => $row_data) {
+            foreach ($row_data as $key => $value) {
                 if ($key === 'timestamp') {
                     $grid_data['rows'][$row_index][$key] = date('Y-m-d H:i:s', $value);
                 } elseif ($key === 'key_fingerprint') {
@@ -165,9 +165,9 @@ class KeysController extends ApiControllerBase
                 }
             } else {
                 return array(
-                    'status'=>'fail', 
-                    'result'=>'failed', 
-                    'validations'=>$validate['validations'], 
+                    'status'=>'fail',
+                    'result'=>'failed',
+                    'validations'=>$validate['validations'],
                     'message'=>'Validation errors'
                 );
             }
@@ -210,7 +210,7 @@ class KeysController extends ApiControllerBase
     {
         $result = array('status'=>'fail', 'validations'=>array());
         $validation_messages = $model->performValidation();
-        foreach ($validation_messages as $field=>$message) {
+        foreach ($validation_messages as $field => $message) {
             if ($node != null) {
                 $index = str_replace($node->__reference, $reference, $message->getField());
                 $result['validations'][$index] = $message->getMessage();
