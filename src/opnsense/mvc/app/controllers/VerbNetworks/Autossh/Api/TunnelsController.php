@@ -215,6 +215,7 @@ class TunnelsController extends ApiControllerBase
         $backend = new Backend();
         $configd_run = sprintf('autossh stop_tunnel %s', escapeshellarg($uuid));
         $backend->configdRun($configd_run);
+        return;
     }
     
     private function save($model, $node = null, $reference = null)
