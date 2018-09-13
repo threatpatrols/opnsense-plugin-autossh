@@ -90,7 +90,7 @@ class ServiceController extends ApiControllerBase
     {
         $response = array('status'=>'fail', 'message'=>'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
-            $backend_result = $this->backendStandardAction('status_tunnel', $this->request->getPost('id'));
+            $backend_result = $this->backendRcAction('status_tunnel', $this->request->getPost('id'));
             if (false === strpos($backend_result, ' not running')) {
                 return array('status'=>'running');
             } else {
@@ -105,7 +105,7 @@ class ServiceController extends ApiControllerBase
     {
         $response = array('status'=>'fail', 'message'=>'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
-            $backend_result = $this->backendStandardAction('start_tunnel', $this->request->getPost('id'));
+            $backend_result = $this->backendRcAction('start_tunnel', $this->request->getPost('id'));
             if (false !== strpos($backend_result, 'Starting autossh tunnel ')) {
                 return array('status'=>'success', 'message'=>$backend_result);
             } else {
@@ -119,7 +119,7 @@ class ServiceController extends ApiControllerBase
     {
         $response = array('status'=>'fail', 'message'=>'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
-            $backend_result = $this->backendStandardAction('restart_tunnel', $this->request->getPost('id'));
+            $backend_result = $this->backendRcAction('restart_tunnel', $this->request->getPost('id'));
             if (false !== strpos($backend_result, 'Starting autossh tunnel ')) {
                 return array('status'=>'success', 'message'=>$backend_result);
             } else {
@@ -133,7 +133,7 @@ class ServiceController extends ApiControllerBase
     {
         $response = array('status'=>'fail', 'message'=>'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
-            $backend_result = $this->backendStandardAction('stop_tunnel', $this->request->getPost('id'));
+            $backend_result = $this->backendRcAction('stop_tunnel', $this->request->getPost('id'));
             if (false !== strpos($backend_result, 'Stopping autossh tunnel ')) {
                 return array('status'=>'success', 'message'=>$backend_result);
             } else {
@@ -219,7 +219,7 @@ class ServiceController extends ApiControllerBase
         return $response;
     }
     
-    private function backendStandardAction($action, $uuid)
+    private function backendRcAction($action, $uuid)
     {
         $backend = new Backend();
         $configd_run = sprintf('autossh %s %s', escapeshellarg($action), escapeshellarg($uuid));
