@@ -44,8 +44,8 @@ class ServiceController extends ApiControllerBase
         if ($this->request->isPost()) {
             $backend = new Backend();
             
-            $backend_response = trim($backend->configdRun('template reload VerbNetworks/Autossh'));
-            if (strtoupper($backend_response) !== 'OK') {
+            $backend_template_response = trim($backend->configdRun('template reload VerbNetworks/Autossh'));
+            if (strtoupper($backend_template_response) !== 'OK') {
                 return array('status'=>'fail',
                     'message'=>'Error while reloading template files, review configd logs for more information');
             }

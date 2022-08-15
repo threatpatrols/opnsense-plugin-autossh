@@ -32,30 +32,8 @@ namespace VerbNetworks\Autossh;
 use OPNsense\Base\BaseModel;
 use \OPNsense\Core\Backend;
 
-
 class Autossh extends BaseModel
 {
-    public $config_status_filename = '/var/run/autossh.reload_required';
-    
-    public function setConfigChangeOn()
-    {
-        touch($this->config_status_filename);
-        return;
-    }
-    
-    public function setConfigChangeOff()
-    {
-        if (file_exists($this->config_status_filename)) {
-            unlink($this->config_status_filename);
-        }
-        return;
-    }
-    
-    public function getConfigChangeStatus()
-    {
-        return file_exists($this->config_status_filename);
-    }
-    
     public function performConfigHelper()
     {
         $backend = new Backend();
@@ -66,6 +44,7 @@ class Autossh extends BaseModel
                 'message'=>'Unknown error occured while performing autossh config_helper, '
                 . 'review configd logs for more information');
         }
+        
         return $backend_response;
     }
 }
