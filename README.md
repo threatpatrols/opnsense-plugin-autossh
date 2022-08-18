@@ -1,31 +1,19 @@
-# Autossh
-The Autossh plugin for OPNsense is a tool for establishing, maintaining and
-managing reliable SSH tunnels with remote hosts.  It can be used to solve a
-wide range of connection challenges through the (sometimes creative) use of
-TCP port-forwards.
+# Autossh for OPNsense
 
-## Features
- - Default ssh-key permissions that prevent unwanted remote ssh-server shell access abuses.
- - Ability to define local-forward and remote-forward TCP tunnels.
- - Ability to define local network SOCKS proxy via a remote host (aka dynamic-forward).
- - Ability to bind outbound ssh connections to different (external) interfaces.
- - Ability to configure many (27x) of the ssh-client connection parameters, including all cryptographic options.
- - Ability to observe the health status of the tunnel at a glance.
- - Can rely on Autossh to reestablish a tunnel after a connectivity outage.
+The Autossh plugin for OPNsense is a wrapper for the autossh system-package that allows for establishing persistent reliable SSH tunnels with remote hosts. It can be used to solve a wide range of connection challenges through the (sometimes creative) use of TCP port-forwards.
 
-## Use cases
- - Provide remote network access to a site that has no public addresses, such as when ISPs use NAT.
- - Ensure redundant multipath remote access via primary and secondary connections via interface binding.
- - Create your own "privacy" VPN system for all local network users using a SOCKS proxy (dynamic-forward) to a remote system.
- - Provide local network access to remote system services such as a SMTP relay or another SSH service.
- - Provide remote system access to a local network services such as a database or RDP service.
- - Provide access remote system access to other remote network acting as a middle-man TCP-port connector.
-
-## Source
- * https://github.com/threatpatrols/opnsense-plugin-autossh
+Autossh tunnels can be used to quickly solve a wide range of challenges all over SSH, without the need for VPN clients etc:
+ * Provide reverse-remote access to a site that has no public addresses, such as when ISPs use NAT.
+ * Ensure redundant multipath reverse-remote access via both primary and secondary connections via interface binding.
+ * Create your own "privacy" VPN system for local network users using a SOCKS proxy (ssh-dynamic-forward) to a remote system.
+ * Provide local network access to remote system services such as SMTP relays or another remote TCP services.
+ * Provide reverse-remote access to local network services such local RDP services.
 
 ## Documentation
  * https://documentation.threatpatrols.com/opnsense/plugins/autossh/
+
+## Source
+ * https://github.com/threatpatrols/opnsense-plugin-autossh
 
 ## Copyright
 * Copyright &copy; 2022 Threat Patrols Pty Ltd &lt;contact@threatpatrols.com&gt;
@@ -35,4 +23,4 @@ TCP port-forwards.
 All rights reserved.
 
 ## License
-BSD-2-Clause - see LICENSE file for full details.
+* BSD-2-Clause - see LICENSE file for full details.
