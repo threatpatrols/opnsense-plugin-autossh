@@ -1,6 +1,18 @@
 
-.idea
-*.pyc
-work
-package
-/extras/netbeans/
+*.py[cod]
+*.egg-info
+*.egg
+
+venv*/
+.venv*/
+.idea/
+.pytest_cache/
+__pycache__/
+.pytest*/
+
+dev/
+samples/
+
+dist/
+build/
+packages/

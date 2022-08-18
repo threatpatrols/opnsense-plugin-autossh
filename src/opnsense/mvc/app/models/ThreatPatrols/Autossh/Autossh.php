@@ -28,44 +28,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-use ThreatPatrols\Autossh\Autossh;
+namespace ThreatPatrols\Autossh;
 
-function autossh_services()
-{
-    $services = array();
-    $model = new Autossh();
-    $node = $model->getNodeByReference('tunnels.tunnel');
-    
-    if ($node != null) {
-        foreach($node->getNodes() as $tunnel_uuid=>$tunnel) {
-            if((int)$tunnel['enabled'] > 0) {
-                $description = $tunnel['user'] .'@'. $tunnel['hostname'];
-                if(!empty($tunnel['port'])) {
-                    $description = $description.':'.$tunnel['port'];
-                }
-                $services[] = array(
-                    'id' => $tunnel_uuid,
-                    'name' => 'autossh',
-                    'pidfile' => '/var/run/autossh.'.$tunnel_uuid.'.pid',
-                    'description' => htmlspecialchars($description),
-                    'configd' => array(
-                        'start' => array('autossh start_tunnel '.$tunnel_uuid),
-                        'stop' => array('autossh stop_tunnel '.$tunnel_uuid),
-                        'restart' => array('autossh restart_tunnel '.$tunnel_uuid),
-                    ),
-                );
-            }
-        }
-    }
-    return $services;
-}
+use OPNsense\Base\BaseModel;
+use OPNsense\Core\Backend;
 
-function autossh_syslog()
-{
-    $logfacilities = array();
-
-    $logfacilities['autossh'] = array(
-        'facility' => array('autossh', 'autosshd'),
-    );
-    return $logfacilities;
-}
+class Autossh extends BaseModel { }

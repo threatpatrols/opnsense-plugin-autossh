@@ -26,48 +26,52 @@ autossh_flags="-N -y -F ${autossh_configfile}"
 command=/usr/local/bin/autossh
 pidfile=/dev/null
 
-start_cmd="autossh_start_cmd"
-stop_cmd="autossh_stop_cmd"
-status_cmd="autossh_status_cmd"
-restart_cmd="autossh_restart_cmd"
+# all tunnels commands
+start_cmd="autossh_start_tunnels_cmd"
+stop_cmd="autossh_stop_tunnels_cmd"
+status_cmd="autossh_status_tunnels_cmd"
+restart_cmd="autossh_restart_tunnels_cmd"
 
-extra_commands="start_tunnel stop_tunnel status_tunnel restart_tunnel"
+# per tunnel commands
 start_tunnel_cmd="autossh_start_tunnel_cmd"
 stop_tunnel_cmd="autossh_stop_tunnel_cmd"
 status_tunnel_cmd="autossh_status_tunnel_cmd"
 restart_tunnel_cmd="autossh_restart_tunnel_cmd"
 
-autossh_load_rc_config() {
-    tunnel_uuids=`cat ${autossh_configfile} | grep '^Host ' | cut -d' ' -f2`
-}
+extra_commands="start_tunnel stop_tunnel status_tunnel restart_tunnel"
 
-autossh_start_cmd() {
+
+# =============================================================================
+
+autossh_start_tunnels_cmd() {
     local tunnel_uuid
     for tunnel_uuid in ${tunnel_uuids}; do
         autossh_start_tunnel_cmd ${tunnel_uuid}
     done
 }
 
-autossh_stop_cmd() {
+autossh_stop_tunnels_cmd() {
     local tunnel_uuid
     for tunnel_uuid in ${tunnel_uuids}; do
         autossh_stop_tunnel_cmd ${tunnel_uuid}
     done
 }
 
-autossh_restart_cmd() {
+autossh_restart_tunnels_cmd() {
     local tunnel_uuid
     for tunnel_uuid in ${tunnel_uuids}; do
         autossh_restart_tunnel_cmd ${tunnel_uuid}
     done
 }
 
-autossh_status_cmd() {
+autossh_status_tunnels_cmd() {
     local tunnel_uuid
     for tunnel_uuid in ${tunnel_uuids}; do
         autossh_status_tunnel_cmd ${tunnel_uuid}
     done
 }
+
+# =============================================================================
 
 autossh_start_tunnel_cmd() {
     local tunnel_uuid=${1}
@@ -174,7 +178,14 @@ __autossh_exec_config_helper() {
     fi
 }
 
+autossh_load_rc_config() {
+    tunnel_uuids=`cat ${autossh_configfile} | grep '^Host ' | cut -d' ' -f2`
+}
+
+# =============================================================================
+
 autossh_load_rc_config
+
 if [ $(echo ${1} | grep "_tunnel" | wc -l | tr -d ' ') -eq 0 ]; then
     run_rc_command "${1}"
 else

@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -e
+
+if [ $(ls -1 | grep -c '^src$') -eq 1 ]; then
+
+  # Python black code test
+  if [ $(which black | wc -l) -gt 0 ]; then
+    if [ $(black --diff --exclude vendor --line-length=120 src/opnsense/scripts/ThreatPatrols/Autossh | wc -l) -gt 0 ]; then
+      echo
+      echo " >> FATAL: Stopping commit-action until Python black-returncode is zero"
+      echo
+      exit 1
+    fi
+  fi
+
+  # Unexpected vars in code test
+  if [ $(grep cyberco -s -r src/opnsense/scripts/ThreatPatrols/Autossh | wc -l) -gt 0 ]; then
+      echo
+      echo " >> FATAL: Unexpected cyberco value in scripts/ThreatPatrols/Autossh code"
+      echo
+      exit 1
+  fi
+
+  # Increment the PLUGIN_VERSION minor-version value in the Makefile
+  if [ -f "Makefile" ]; then
+
+    plugin_revision_main=$(cat Makefile | grep ^PLUGIN_VERSION= | cut -d'=' -f2 | tr -d ' ' | rev | cut -d'.' -f2- | rev)
+    plugin_revision_minor=$(($(cat Makefile | grep ^PLUGIN_VERSION= | cut -d'=' -f2 | tr -d ' ' | rev | cut -d'.' -f1 | rev)+1))
+    sed -i "s/^PLUGIN_VERSION=.*/PLUGIN_VERSION=     ${plugin_revision_main}.${plugin_revision_minor}/" "Makefile"
+    git add Makefile
+
+    echo "PLUGIN_VERSION= ${plugin_revision_main}.${plugin_revision_minor}"
+  fi
+
+fi

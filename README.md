@@ -21,10 +21,18 @@ TCP port-forwards.
  - Provide remote system access to a local network services such as a database or RDP service.
  - Provide access remote system access to other remote network acting as a middle-man TCP-port connector.
 
-****
+## Source
+ * https://github.com/threatpatrols/opnsense-plugin-autossh
 
-## Authors
-Plugin managed by [Verb Networks Pty Ltd](https://verbnetworks.com)
+## Documentation
+ * https://documentation.threatpatrols.com/opnsense/plugins/autossh/
+
+## Copyright
+* Copyright &copy; 2022 Threat Patrols Pty Ltd &lt;contact@threatpatrols.com&gt;
+* Copyright &copy; 2018 Verb Networks Pty Ltd &lt;contact@verbnetworks.com&gt;
+* Copyright &copy; 2018 Nicholas de Jong &lt;me@nicholasdejong.com&gt;
+
+All rights reserved.
 
 ## License
 BSD-2-Clause - see LICENSE file for full details.

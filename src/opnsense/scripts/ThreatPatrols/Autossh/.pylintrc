@@ -1,0 +1,14 @@
+
+[MASTER]
+disable =
+  invalid-name,
+  missing-class-docstring,
+  missing-function-docstring,
+  missing-module-docstring,
+  too-few-public-methods,
+  logging-fstring-interpolation,
+  no-else-continue,
+  no-else-return,
+
+indent-string='    '
+max-line-length = 120
