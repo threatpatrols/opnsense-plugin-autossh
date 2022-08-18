@@ -39,19 +39,18 @@ use ThreatPatrols\Autossh\Api\AutosshApiControllerBase;
 
 class KeysController extends AutosshApiControllerBase
 {
-    
     public function searchAction()
     {
         $this->sessionClose(); // close out long running actions
         $model = new Autossh();
         $grid = new UIModelGrid($model->keys->key);
-        
+
         $grid_data = $grid->fetchBindRequest(
             $this->request,
             array('name', 'description', 'type', 'key_fingerprint', 'timestamp'),
             'name'
         );
-        
+
         foreach ($grid_data['rows'] as $row_index => $row_data) {
             foreach ($row_data as $key => $value) {
                 if ($key === 'timestamp') {
@@ -62,15 +61,14 @@ class KeysController extends AutosshApiControllerBase
                 }
             }
         }
-        
         return $grid_data;
     }
-    
+
     public function getAction($uuid = null)
     {
         $model = new Autossh();
         if ($uuid != null) {
-            $node = $model->getNodeByReference('keys.key.'.$uuid);
+            $node = $model->getNodeByReference('keys.key.' . $uuid);
             if ($node != null) {
                 $data = $node->getNodes();
                 // munge the data a little bit making it easier to use
@@ -78,37 +76,37 @@ class KeysController extends AutosshApiControllerBase
                 $fingerprint_elements = explode(' ', $data['key_fingerprint']);
                 $data['key_fingerprint'] = $fingerprint_elements[1];
                 unset($data['key_private']);
-                return array('key'=>$data);
+                return array('key' => $data);
             }
         } else {
             $node = $model->keys->key->add();
-            return array('key'=>$node->getNodes());
+            return array('key' => $node->getNodes());
         }
         return array();
     }
-    
+
     public function infoAction($uuid = null)
     {
         $ssh_key_restrictions = 'command="",no-agent-forwarding,no-pty,no-user-rc,no-X11-forwarding';
         $info = array(
-            'title'=>'SSH public-key with shell-prevention restrictions for tunnel remote',
-            'message'=>'Unknown ssh-key',
+            'title' => 'SSH public-key with shell-prevention restrictions for tunnel remote',
+            'message' => 'Unknown ssh-key',
         );
         if ($uuid != null) {
             $model = new Autossh();
-            $node = $model->getNodeByReference('keys.key.'.$uuid);
+            $node = $model->getNodeByReference('keys.key.' . $uuid);
             if ($node != null) {
                 $node_data = $node->getNodes();
                 $key_public = base64_decode($node_data['key_public']);
 
                 // replace host_id comment with this key uuid
-                $key_public = preg_replace('/host_id:.*?$/', 'autossh_key_id:'.$uuid, $key_public);
-                
+                $key_public = preg_replace('/host_id:.*?$/', 'autossh_key_id:' . $uuid, $key_public);
+
                 // prepend ssh-key restrictions
-                $key_public = $ssh_key_restrictions.' '.$key_public;
+                $key_public = $ssh_key_restrictions . ' ' . $key_public;
 
                 $info['html'] = true; // required for afterExecuteRoute() trap
-                $info['message'] = '<p>'.$key_public.'</p>';
+                $info['message'] = '<p>' . $key_public . '</p>';
             }
         }
         return $info;
@@ -117,13 +115,13 @@ class KeysController extends AutosshApiControllerBase
     public function setAction($uuid)
     {
         $response = array(
-            'status'=>'fail',
-            'message'=>'Invalid request'
+            'status' => 'fail',
+            'message' => 'Invalid request'
         );
         if ($this->request->isPost() && $this->request->hasPost('key')) {
             $model = new Autossh();
             if ($uuid != null) {
-                $node = $model->getNodeByReference('keys.key.'.$uuid);
+                $node = $model->getNodeByReference('keys.key.' . $uuid);
                 if ($node != null) {
                     $post_data = $this->request->getPost('key');
                     unset($post_data['type']);
@@ -134,33 +132,33 @@ class KeysController extends AutosshApiControllerBase
         }
         return $response;
     }
-    
+
     public function addAction()
     {
         $response = array(
-            'status'=>'fail',
-            'message'=>'Invalid request'
+            'status' => 'fail',
+            'message' => 'Invalid request'
         );
         if ($this->request->isPost() && $this->request->hasPost('key')) {
             $model = new Autossh();
             $node = $model->keys->key->add();
             $post_data = $this->request->getPost('key');
             $node->setNodes($post_data);
-            
+
             $validate = $this->validate($model, $node, 'key');
             if (count($validate['validations']) == 0) {
                 $backend_response = @json_decode($this->configctlAction("key_gen", $post_data['type']), true);
                 if (empty($backend_response)) {
-                    return array('status'=>'fail', 'message'=>'Error calling autossh key_gen via configd');
+                    return array('status' => 'fail', 'message' => 'Error calling autossh key_gen via configd');
                 } elseif ($backend_response['status'] === 'success') {
                     $node->setNodes(array_merge($post_data, $backend_response['data']));
                     return $this->save($model, $node, 'key');
                 }
             } else {
                 return array(
-                    'status'=>'fail',
-                    'validations'=>$validate['validations'],
-                    'message'=>'Validation errors'
+                    'status' => 'fail',
+                    'validations' => $validate['validations'],
+                    'message' => 'Validation errors'
                 );
             }
         }
@@ -169,20 +167,19 @@ class KeysController extends AutosshApiControllerBase
 
     public function delAction($uuid = null)
     {
-        $response = array('status'=>'fail', 'message'=>'Invalid request');
+        $response = array('status' => 'fail', 'message' => 'Invalid request');
         if ($this->request->isPost()) {
             $model = new Autossh();
             if ($uuid != null) {
                 if ($model->keys->key->del($uuid)) {
                     $model->serializeToConfig();
                     Config::getInstance()->save();
-                    return array('status'=>'success', 'message'=>'Okay, item deleted');
+                    return array('status' => 'success', 'message' => 'Okay, item deleted');
                 } else {
-                    return array('status'=>'fail', 'message'=>'Item not found, nothing deleted');
+                    return array('status' => 'fail', 'message' => 'Item not found, nothing deleted');
                 }
             }
         }
         return $response;
     }
-
 }

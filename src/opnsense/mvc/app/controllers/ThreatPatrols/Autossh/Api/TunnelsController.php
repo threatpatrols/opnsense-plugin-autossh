@@ -39,13 +39,12 @@ use ThreatPatrols\Autossh\Api\AutosshApiControllerBase;
 
 class TunnelsController extends AutosshApiControllerBase
 {
-    
     public function searchAction()
     {
         $this->sessionClose(); // close out long running actions
         $model = new Autossh();
         $grid = new UIModelGrid($model->tunnels->tunnel);
-        
+
         $grid_data = $grid->fetchBindRequest(
             $this->request,
             array(
@@ -54,17 +53,16 @@ class TunnelsController extends AutosshApiControllerBase
             ),
             'hostname'
         );
-        
+
         if (isset($grid_data['rows'])) {
             foreach ($grid_data['rows'] as $index => $tunnel) {
-                $grid_data['rows'][$index]['connection'] = $tunnel['user'].'@'.$tunnel['hostname'];
+                $grid_data['rows'][$index]['connection'] = $tunnel['user'] . '@' . $tunnel['hostname'];
                 if (!empty($tunnel['port'])) {
                     $grid_data['rows'][$index]['connection'] =
-                         $grid_data['rows'][$index]['connection'].':'.$tunnel['port'];
+                         $grid_data['rows'][$index]['connection'] . ':' . $tunnel['port'];
                 }
             }
         }
-        
         return $grid_data;
     }
 
@@ -72,25 +70,25 @@ class TunnelsController extends AutosshApiControllerBase
     {
         $model = new Autossh();
         if ($uuid != null) {
-            $node = $model->getNodeByReference('tunnels.tunnel.'.$uuid);
+            $node = $model->getNodeByReference('tunnels.tunnel.' . $uuid);
             if ($node != null) {
-                $data = array('tunnel'=>$node->getNodes());
+                $data = array('tunnel' => $node->getNodes());
                 return $data;
             }
         } else {
             $node = $model->tunnels->tunnel->add();
-            $data = array('tunnel'=>$node->getNodes());
+            $data = array('tunnel' => $node->getNodes());
             $data['tunnel']['known_host'] = 'new connection, no known host value';
             return $data;
         }
         return array();
     }
-    
+
     public function infoAction($uuid = null)
     {
         $info = array(
-            'title'=>'SSH server known host keys',
-            'message'=>null,
+            'title' => 'SSH server known host keys',
+            'message' => null,
         );
         if ($uuid != null) {
             $response = json_decode($this->configctlAction("host_keys", $uuid), true);
@@ -98,7 +96,7 @@ class TunnelsController extends AutosshApiControllerBase
                 $info['html'] = true; // required for afterExecuteRoute() trap
                 $info['message'] = '';
                 foreach ($response['data'] as $key_value) {
-                    $info['message'] = $info['message'].'<p>'.htmlspecialchars($key_value).'</p>';
+                    $info['message'] = $info['message'] . '<p>' . htmlspecialchars($key_value) . '</p>';
                 }
             } else {
                 $info['message'] = $response['message'];
@@ -110,13 +108,13 @@ class TunnelsController extends AutosshApiControllerBase
     public function setAction($uuid = null)
     {
         $response = array(
-            'status'=>'fail',
-            'message'=>'Invalid request'
+            'status' => 'fail',
+            'message' => 'Invalid request'
         );
         if ($this->request->isPost() && $this->request->hasPost('tunnel')) {
             $model = new Autossh();
             if ($uuid !== null) {
-                $node = $model->getNodeByReference('tunnels.tunnel.'.$uuid);
+                $node = $model->getNodeByReference('tunnels.tunnel.' . $uuid);
                 if ($node !== null) {
                     $post_data = $this->request->getPost('tunnel');
                     $node->setNodes($post_data);
@@ -132,38 +130,38 @@ class TunnelsController extends AutosshApiControllerBase
         }
         return $response;
     }
-    
+
     public function addAction()
     {
         $response = array(
-            'status'=>'fail',
-            'message'=>'Invalid request'
+            'status' => 'fail',
+            'message' => 'Invalid request'
         );
         if ($this->request->isPost() && $this->request->hasPost('tunnel')) {
             $model = new Autossh();
             $node = $model->tunnels->tunnel->add();
             $post_data = $this->request->getPost('tunnel');
             $node->setNodes($post_data);
-            
+
             $validate = $this->validate($model, $node, 'tunnel');
             if (0 === count($validate['validations'])) {
                 return $this->save($model, $node, 'tunnel');
             } else {
                 return array(
-                    'status'=>'fail',
-                    'validations'=>$validate['validations'],
-                    'message'=>'Validation errors'
+                    'status' => 'fail',
+                    'validations' => $validate['validations'],
+                    'message' => 'Validation errors'
                 );
             }
         }
         return $response;
     }
-    
+
     public function delAction($uuid = null)
     {
         $response = array(
-            'status'=>'fail',
-            'message'=>'Invalid request'
+            'status' => 'fail',
+            'message' => 'Invalid request'
         );
         if ($this->request->isPost()) {
             $model = new Autossh();
@@ -174,27 +172,27 @@ class TunnelsController extends AutosshApiControllerBase
                     Config::getInstance()->save();
                     return $this->doConfigUpdates("Item deleted");
                 } else {
-                    return array('status'=>'fail', 'message'=>'Item not found, nothing deleted');
+                    return array('status' => 'fail', 'message' => 'Item not found, nothing deleted');
                 }
             }
         }
         return $response;
     }
-    
+
     public function toggleAction($uuid = null)
     {
         $response = array(
-            'status'=>'fail',
-            'message'=>'Invalid request'
+            'status' => 'fail',
+            'message' => 'Invalid request'
         );
         if ($this->request->isPost()) {
             $model = new Autossh();
             if ($uuid != null) {
-                $node = $model->getNodeByReference('tunnels.tunnel.'.$uuid);
+                $node = $model->getNodeByReference('tunnels.tunnel.' . $uuid);
                 if (!empty($node)) {
                     $node_data = $node->getNodes();
                     $toggle_data = array(
-                        'enabled'=>((int)$node_data['enabled'] > 0 ? '0' : '1')
+                        'enabled' => ((int)$node_data['enabled'] > 0 ? '0' : '1')
                     );
                     $node->setNodes($toggle_data);
                     $response = $this->save($model, $node, 'tunnel');
@@ -209,7 +207,7 @@ class TunnelsController extends AutosshApiControllerBase
         }
         return $response;
     }
-    
+
     public function startTunnel($uuid)
     {
         return $this->configctlAction("start_tunnel", $uuid);
@@ -219,5 +217,4 @@ class TunnelsController extends AutosshApiControllerBase
     {
         return $this->configctlAction("stop_tunnel", $uuid);
     }
-
 }

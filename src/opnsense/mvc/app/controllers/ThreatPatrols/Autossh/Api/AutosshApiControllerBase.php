@@ -34,10 +34,9 @@ use OPNsense\Base\ApiControllerBase;
 
 class AutosshApiControllerBase extends ApiControllerBase
 {
-
     public function validate($model, $node = null, $reference = null)
     {
-        $result = array('status'=>'fail', 'validations'=>array());
+        $result = array('status' => 'fail', 'validations' => array());
         $validation_messages = $model->performValidation();
         foreach ($validation_messages as $field => $message) {
             if ($node != null) {
@@ -68,7 +67,7 @@ class AutosshApiControllerBase extends ApiControllerBase
         return $result;
     }
 
-    public function doConfigUpdates($message=null)
+    public function doConfigUpdates($message = null)
     {
         $backend = new Backend();
 
@@ -76,24 +75,24 @@ class AutosshApiControllerBase extends ApiControllerBase
         $backend_response = trim($backend->configdRun('template reload ThreatPatrols/Autossh'));
         if (strtoupper($backend_response) !== 'OK') {
             return array(
-                'status'=>'fail',
-                'message'=>'Error while reloading autossh template files, review configd logs for more information'
+                'status' => 'fail',
+                'message' => 'Error while reloading autossh template files, review configd logs for more information'
             );
         }
 
         // render the autossh files
         $backend_response = @json_decode(trim($backend->configdRun('autossh config_helper')), true);
-        if(empty($backend_response) || !isset($backend_response['status'])) {
+        if (empty($backend_response) || !isset($backend_response['status'])) {
             return array(
-                'status'=>'fail',
-                'message'=>'Error while performing autossh config_helper, review configd logs for more information'
+                'status' => 'fail',
+                'message' => 'Error while performing autossh config_helper, review configd logs for more information'
             );
         }
 
         if (empty($message)) {
             $message = "Configuration template and configuration helper completed";
         }
-        return array('status'=>'success',  'message'=>$message);
+        return array('status' => 'success',  'message' => $message);
     }
 
     public function afterExecuteRoute($dispatcher)
@@ -113,5 +112,4 @@ class AutosshApiControllerBase extends ApiControllerBase
         // all other situations get passed to the parent as usual.
         return parent::afterExecuteRoute($dispatcher);
     }
-
 }

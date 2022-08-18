@@ -38,10 +38,9 @@ use ThreatPatrols\Autossh\Api\AutosshApiControllerBase;
 
 class ConnectionsController extends AutosshApiControllerBase
 {
-
     public function reloadAction()
     {
-        $response = array('status'=>'fail', 'message'=>'Invalid request');
+        $response = array('status' => 'fail', 'message' => 'Invalid request');
         if ($this->request->isPost()) {
             return $this->doConfigUpdates("Connections reloaded");
         }
@@ -50,13 +49,13 @@ class ConnectionsController extends AutosshApiControllerBase
 
     public function statusAction()
     {
-        $response = array('status'=>'fail', 'message'=>'Invalid request');
+        $response = array('status' => 'fail', 'message' => 'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
             $backend_result = $this->configctlAction('status_tunnel', $this->request->getPost('id'));
             if (false === strpos($backend_result, ' not running')) {
-                return array('status'=>'running');
+                return array('status' => 'running');
             } else {
-                return array('status'=>'stopped');
+                return array('status' => 'stopped');
             }
         }
         return $response;
@@ -64,13 +63,13 @@ class ConnectionsController extends AutosshApiControllerBase
 
     public function startAction()
     {
-        $response = array('status'=>'fail', 'message'=>'Invalid request');
+        $response = array('status' => 'fail', 'message' => 'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
             $backend_result = $this->configctlAction('start_tunnel', $this->request->getPost('id'));
             if (false !== strpos($backend_result, 'Starting autossh tunnel ')) {
-                return array('status'=>'success', 'message'=>$backend_result);
+                return array('status' => 'success', 'message' => $backend_result);
             } else {
-                return array('status'=>'fail', 'message'=>$backend_result);
+                return array('status' => 'fail', 'message' => $backend_result);
             }
         }
         return $response;
@@ -78,65 +77,65 @@ class ConnectionsController extends AutosshApiControllerBase
 
     public function restartAction()
     {
-        $response = array('status'=>'fail', 'message'=>'Invalid request');
+        $response = array('status' => 'fail', 'message' => 'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
             $backend_result = $this->configctlAction('restart_tunnel', $this->request->getPost('id'));
             if (false !== strpos($backend_result, 'Starting autossh tunnel ')) {
-                return array('status'=>'success', 'message'=>$backend_result);
+                return array('status' => 'success', 'message' => $backend_result);
             } else {
-                return array('status'=>'fail', 'message'=>$backend_result);
+                return array('status' => 'fail', 'message' => $backend_result);
             }
         }
         return $response;
     }
-    
+
     public function stopAction()
     {
-        $response = array('status'=>'fail', 'message'=>'Invalid request');
+        $response = array('status' => 'fail', 'message' => 'Invalid request');
         if ($this->request->isPost() && $this->request->hasPost('id')) {
             $backend_result = $this->configctlAction('stop_tunnel', $this->request->getPost('id'));
             if (false !== strpos($backend_result, 'Stopping autossh tunnel ')) {
-                return array('status'=>'success', 'message'=>$backend_result);
+                return array('status' => 'success', 'message' => $backend_result);
             } else {
-                return array('status'=>'success', 'message'=>$backend_result);
+                return array('status' => 'success', 'message' => $backend_result);
             }
         }
         return $response;
     }
-    
+
     public function listStatusAction()
     {
         $response = array(
-            'current'=>1,
-            'rowCount'=>null,
-            'rows'=>array(),
-            'total'=>null
+            'current' => 1,
+            'rowCount' => null,
+            'rows' => array(),
+            'total' => null
         );
-        
+
         if ($this->request->isGet()) {
             $model = new Autossh();
             $grid = new UIModelGrid($model->tunnels->tunnel);
-        
+
             $grid_data = $grid->fetchBindRequest($this->request, array(
                 'enabled', 'user', 'hostname', 'port', 'bind_interface', 'ssh_key',
                 'local_forward', 'remote_forward', 'dynamic_forward', 'tunnel_device'
             ), 'hostname');
-            
+
             foreach ($grid_data['rows'] as $tunnel) {
-                $connection = $tunnel['user'].'@'.$tunnel['hostname'];
+                $connection = $tunnel['user'] . '@' . $tunnel['hostname'];
                 if (!empty($tunnel['port'])) {
-                    $connection .= ':'.$tunnel['port'];
+                    $connection .= ':' . $tunnel['port'];
                 }
-                
+
                 $forward_data = array(
-                    'local'=>$tunnel['local_forward'],
-                    'dynamic'=>$tunnel['dynamic_forward'],
-                    'remote'=>$tunnel['remote_forward'],
-                    'tunnel'=>$tunnel['tunnel_device']
+                    'local' => $tunnel['local_forward'],
+                    'dynamic' => $tunnel['dynamic_forward'],
+                    'remote' => $tunnel['remote_forward'],
+                    'tunnel' => $tunnel['tunnel_device']
                 );
 
                 $backend_result = @json_decode($this->configctlAction("connection_status", $tunnel['uuid']), true);
-                $status_data = array('enabled'=>null);
+                $status_data = array('enabled' => null);
 
                 if (isset($backend_result['status']) && $backend_result['status'] === 'success') {
                     $last_healthy = (int)strtotime($backend_result['data']['last_healthy']);
@@ -154,28 +153,27 @@ class ConnectionsController extends AutosshApiControllerBase
                     }
 
                     $status_data = array(
-                        'enabled'=>$backend_result['data']['enabled'],
-                        'uptime'=>$backend_result['data']['uptime'],
-                        'last_healthy'=>$last_healthy,
-                        'starts'=> $backend_result['data']['starts'],
+                        'enabled' => $backend_result['data']['enabled'],
+                        'uptime' => $backend_result['data']['uptime'],
+                        'last_healthy' => $last_healthy,
+                        'starts' => $backend_result['data']['starts'],
                     );
                 }
-                
+
                 $response['rows'][] = array(
-                    'uuid'=>$tunnel['uuid'],
-                    'connection'=>$connection,
-                    'bind_interface'=>$tunnel['bind_interface'],
-                    'forwards'=>$forward_data,
-                    'ssh_key'=>$tunnel['ssh_key'],
-                    'status'=>$status_data
+                    'uuid' => $tunnel['uuid'],
+                    'connection' => $connection,
+                    'bind_interface' => $tunnel['bind_interface'],
+                    'forwards' => $forward_data,
+                    'ssh_key' => $tunnel['ssh_key'],
+                    'status' => $status_data
                 );
             }
         }
-        
+
         $response['rowCount'] = count($response['rows']);
         $response['total'] = count($response['rows']);
-        
+
         return $response;
     }
-
 }
