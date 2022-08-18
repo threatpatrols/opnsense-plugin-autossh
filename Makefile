@@ -1,6 +1,6 @@
 
 PLUGIN_NAME=        autossh
-PLUGIN_VERSION=     0.2.2
+PLUGIN_VERSION=     0.2.3
 PLUGIN_COMMENT=     Create and automatically persist SSH based tunnels
 PLUGIN_MAINTAINER=  contact@threatpatrols.com
 PLUGIN_WWW=         https://github.com/threatpatrols/opnsense-plugin-autossh
