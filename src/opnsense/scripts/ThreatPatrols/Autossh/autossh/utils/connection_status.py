@@ -108,8 +108,10 @@ def connection_status(connection_uuid, ssh_config_file, filemask="/var/run/autos
                     status["tunnel_device"] = parts[1]
 
     if status["pids"]["autossh"]:
-        command_line = f'grep "autossh {status["pids"]["autossh"]}" "{__autossh_logfile__}" | grep "autosshd" | ' \
-                       f'grep "connection ok" | tail -n1 | cut -d" " -f2'
+        command_line = (
+            f'grep "autossh {status["pids"]["autossh"]}" "{__autossh_logfile__}" | grep "autosshd" | '
+            f'grep "connection ok" | tail -n1 | cut -d" " -f2'
+        )
         stdout, stderr, rc = exec_command(command_line)
         if stdout and len(stdout) > 16:
             status["last_healthy"] = stdout.decode("utf8").strip()
