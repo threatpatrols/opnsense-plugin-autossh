@@ -69,6 +69,7 @@ class ConnectionsController extends AutosshApiControllerBase
             if (false !== strpos($backend_result, 'Starting autossh tunnel ')) {
                 return array('status' => 'success', 'message' => $backend_result);
             } else {
+                syslog(LOG_ERR, $backend_result);
                 return array('status' => 'fail', 'message' => $backend_result);
             }
         }
@@ -83,6 +84,7 @@ class ConnectionsController extends AutosshApiControllerBase
             if (false !== strpos($backend_result, 'Starting autossh tunnel ')) {
                 return array('status' => 'success', 'message' => $backend_result);
             } else {
+                syslog(LOG_ERR, $backend_result);
                 return array('status' => 'fail', 'message' => $backend_result);
             }
         }
@@ -97,7 +99,8 @@ class ConnectionsController extends AutosshApiControllerBase
             if (false !== strpos($backend_result, 'Stopping autossh tunnel ')) {
                 return array('status' => 'success', 'message' => $backend_result);
             } else {
-                return array('status' => 'success', 'message' => $backend_result);
+                syslog(LOG_ERR, $backend_result);
+                return array('status' => 'fail', 'message' => $backend_result);
             }
         }
         return $response;

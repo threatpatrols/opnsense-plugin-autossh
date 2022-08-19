@@ -31,7 +31,6 @@
 namespace ThreatPatrols\Autossh;
 
 use OPNsense\Base\BaseModel;
-use OPNsense\Core\Backend;
 
 class Autossh extends BaseModel
 {

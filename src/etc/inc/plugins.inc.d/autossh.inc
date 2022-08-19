@@ -43,6 +43,8 @@ function autossh_services()
                 if(!empty($tunnel['port'])) {
                     $description = $description.':'.$tunnel['port'];
                 }
+                if (strlen($description) > 32)
+                    $description = substr($description, 0, 29) . '...';
                 $services[] = array(
                     'id' => $tunnel_uuid,
                     'name' => 'autossh',
@@ -63,9 +65,8 @@ function autossh_services()
 function autossh_syslog()
 {
     $logfacilities = array();
-
     $logfacilities['autossh'] = array(
-        'facility' => array('autossh', 'autosshd'),
+        'facility' => array('autossh', 'autosshd', '/usr/local/bin/ssh'),
     );
     return $logfacilities;
 }

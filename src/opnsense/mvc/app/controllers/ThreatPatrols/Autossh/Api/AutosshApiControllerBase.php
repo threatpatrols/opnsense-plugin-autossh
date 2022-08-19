@@ -74,19 +74,17 @@ class AutosshApiControllerBase extends ApiControllerBase
         // reload templates first
         $backend_response = trim($backend->configdRun('template reload ThreatPatrols/Autossh'));
         if (strtoupper($backend_response) !== 'OK') {
-            return array(
-                'status' => 'fail',
-                'message' => 'Error while reloading autossh template files, review configd logs for more information'
-            );
+            $error_message = "Error while reloading autossh template files, review configd logs for more information";
+            syslog(LOG_ERR, $error_message);
+            return array('status' => 'fail', 'message' => $error_message);
         }
 
         // render the autossh files
         $backend_response = @json_decode(trim($backend->configdRun('autossh config_helper')), true);
         if (empty($backend_response) || !isset($backend_response['status'])) {
-            return array(
-                'status' => 'fail',
-                'message' => 'Error while performing autossh config_helper, review configd logs for more information'
-            );
+            $error_message = "Error while performing autossh config_helper, review configd logs for more information";
+            syslog(LOG_ERR, $error_message);
+            return array('status' => 'fail', 'message' => $error_message);
         }
 
         if (empty($message)) {

@@ -149,7 +149,9 @@ class KeysController extends AutosshApiControllerBase
             if (count($validate['validations']) == 0) {
                 $backend_response = @json_decode($this->configctlAction("key_gen", $post_data['type']), true);
                 if (empty($backend_response)) {
-                    return array('status' => 'fail', 'message' => 'Error calling autossh key_gen via configd');
+                    $error_message = "Error calling autossh key_gen via configd";
+                    syslog(LOG_ERR, $error_message);
+                    return array('status' => 'fail', 'message' => $error_message);
                 } elseif ($backend_response['status'] === 'success') {
                     $node->setNodes(array_merge($post_data, $backend_response['data']));
                     return $this->save($model, $node, 'key');
