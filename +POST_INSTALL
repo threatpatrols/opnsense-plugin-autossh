@@ -1,2 +1,3 @@
 #!/bin/sh
-configctl syslog restart
+
+/usr/local/etc/rc.configure_plugins
