@@ -7,4 +7,4 @@ Autossh tunnels can be used to quickly solve a wide range of challenges all over
  * Provide local network access to remote system services such as SMTP relays or another remote TCP services.
  * Provide reverse-remote access to local network services such local RDP services.
 
-WWW: https://github.com/threatpatrols/opnsense-plugin-autossh
+WWW: https://documentation.threatpatrols.com/opnsense/plugins/autossh/
