@@ -30,10 +30,15 @@
 
 namespace ThreatPatrols\Autossh;
 
+use OPNsense\Core\Backend;
+
 class SettingsController extends \OPNsense\Base\IndexController
 {
     public function indexAction()
     {
+        $backend = new Backend();
+        $response = json_decode(trim($backend->configdRun("autossh version")), true);
+        $this->view->autossh_version = $response["version"];
         $this->view->pick('ThreatPatrols/Autossh/settings');
         $this->view->formDialogTunnels = $this->getForm('tunnels');
         $this->view->formDialogKeys = $this->getForm('keys');

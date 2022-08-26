@@ -30,9 +30,7 @@
 
 namespace ThreatPatrols\Autossh\Api;
 
-use OPNsense\Core\Backend;
 use OPNsense\Core\Config;
-use OPNsense\Base\ApiControllerBase;
 use OPNsense\Base\UIModelGrid;
 use ThreatPatrols\Autossh\Autossh;
 use ThreatPatrols\Autossh\Api\AutosshApiControllerBase;
