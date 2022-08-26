@@ -124,11 +124,21 @@
                     <li>Provide reverse-remote access to local network services such local RDP services.</li>
                 </ul>
 
+                <h2>Version</h2>
+                <ul>
+                    <li>{{ autossh_version }}</li>
+                </ul>
+
                 <hr />
                 
                 <h2>Documentation</h2>
                 <ul>
                     <li><a rel="noreferrer noopener" target="_blank" href="https://documentation.threatpatrols.com/opnsense/plugins/autossh/">https://documentation.threatpatrols.com/opnsense/plugins/autossh</a></li>
+                </ul>
+
+                <h2>Issues</h2>
+                <ul>
+                    <li><a rel="noreferrer noopener" target="_blank" href="https://github.com/threatpatrols/opnsense-plugin-autossh/issues">https://github.com/threatpatrols/opnsense-plugin-autossh/issues</a></li>
                 </ul>
 
                 <h2>Source</h2>
@@ -137,16 +147,16 @@
                 </ul>
 
                 <h2>Copyright</h2>
-                <ul>
-                    <li>Autossh (c) 2022 <a rel="noreferrer noopener" target="_blank" href="https://www.threatpatrols.com">Threat Patrols Pty Ltd</a></li>
-                </ul>
+                <p>
+                    Autossh (c) 2022 <a rel="noreferrer noopener" target="_blank" href="https://www.threatpatrols.com">Threat Patrols Pty Ltd</a>
+                </p>
+                <p>
+                    All rights reserved.
+                </p>
 
                 <h2>License</h2>
-                <ul>
-                    <li>BSD-2-Clause - see LICENSE file for full details.</li>
-                </ul>
-                <p></p>
-                
+                <p>BSD-2-Clause - see source LICENSE file for details.</p>
+
             </div>
 
         </div>
