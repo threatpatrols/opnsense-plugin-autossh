@@ -116,7 +116,7 @@
                 <ciphers type="OptionField">
                     <required>Y</required>
                     <multiple>Y</multiple>
-                    <default>ciphers_01,ciphers_02,ciphers_03,ciphers_04,ciphers_05,ciphers_06</default>
+                    <default>chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com</default>
                     <optionvalues>
                         <ciphers_01 value="chacha20-poly1305@openssh.com">chacha20-poly1305@openssh.com</ciphers_01>
                         <ciphers_02 value="aes128-ctr">aes128-ctr</ciphers_02>
@@ -172,7 +172,7 @@
                 <host_key_algorithms type="OptionField">
                     <required>Y</required>
                     <multiple>Y</multiple>
-                    <default>host_key_algorithms_01,host_key_algorithms_02,host_key_algorithms_03,host_key_algorithms_04,host_key_algorithms_05,host_key_algorithms_06,host_key_algorithms_07,host_key_algorithms_08,host_key_algorithms_09,host_key_algorithms_10</default>
+                    <default>ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,ssh-rsa</default>
                     <optionvalues>
                         <host_key_algorithms_01 value="ecdsa-sha2-nistp256-cert-v01@openssh.com">ecdsa-sha2-nistp256-cert-v01@openssh.com</host_key_algorithms_01>
                         <host_key_algorithms_02 value="ecdsa-sha2-nistp384-cert-v01@openssh.com">ecdsa-sha2-nistp384-cert-v01@openssh.com</host_key_algorithms_02>
@@ -196,7 +196,7 @@
                 <kex_algorithms type="OptionField">
                     <required>Y</required>
                     <multiple>Y</multiple>
-                    <default>kex_algorithms_01,kex_algorithms_02,kex_algorithms_03,kex_algorithms_04,kex_algorithms_05,kex_algorithms_06,kex_algorithms_07,kex_algorithms_08,kex_algorithms_09,kex_algorithms_10,kex_algorithms_11</default>
+                    <default>curve25519-sha256,curve25519-sha256,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1</default>
                     <optionvalues>
                         <kex_algorithms_01 value="curve25519-sha256">curve25519-sha256</kex_algorithms_01>
                         <kex_algorithms_02 value="curve25519-sha256">curve25519-sha256@libssh.org</kex_algorithms_02>
@@ -237,7 +237,7 @@
                 <macs type="OptionField">
                     <required>Y</required>
                     <multiple>Y</multiple>
-                    <default>macs_01,macs_02,macs_03,macs_04,macs_05,macs_06,macs_07,macs_08,macs_09,macs_10</default>
+                    <default>umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1</default>
                     <optionvalues>
                         <macs_01 value="umac-64-etm@openssh.com">umac-64-etm@openssh.com</macs_01>
                         <macs_02 value="umac-128-etm@openssh.com">umac-128-etm@openssh.com</macs_02>
@@ -260,7 +260,7 @@
                 <pubkey_accepted_key_types type="OptionField">
                     <required>Y</required>
                     <multiple>Y</multiple>
-                    <default>pubkey_accepted_key_types_01,pubkey_accepted_key_types_02,pubkey_accepted_key_types_03,pubkey_accepted_key_types_04,pubkey_accepted_key_types_05,pubkey_accepted_key_types_06,pubkey_accepted_key_types_07,pubkey_accepted_key_types_08,pubkey_accepted_key_types_09,pubkey_accepted_key_types_10</default>
+                    <default>ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,ssh-rsa</default>
                     <optionvalues>
                         <pubkey_accepted_key_types_01 value="ecdsa-sha2-nistp256-cert-v01@openssh.com">ecdsa-sha2-nistp256-cert-v01@openssh.com</pubkey_accepted_key_types_01>
                         <pubkey_accepted_key_types_02 value="ecdsa-sha2-nistp384-cert-v01@openssh.com">ecdsa-sha2-nistp384-cert-v01@openssh.com</pubkey_accepted_key_types_02>
@@ -278,7 +278,7 @@
                 <rekey_limit type="OptionField">
                     <required>Y</required>
                     <multiple>N</multiple>
-                    <default>rekey_limit_01</default>
+                    <default>default none</default>
                     <optionvalues>
                         <rekey_limit_01 value="default none">default none</rekey_limit_01>
                         <rekey_limit_02 value="1G 1h">1G 1h</rekey_limit_02>
