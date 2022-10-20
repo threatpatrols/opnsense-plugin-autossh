@@ -1,7 +1,7 @@
 <model>
     <mount>//ThreatPatrols/Autossh</mount>
     <description>Threat Patrols "Autossh" plugin for OPNsense</description>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <items>
 
         <keys>
