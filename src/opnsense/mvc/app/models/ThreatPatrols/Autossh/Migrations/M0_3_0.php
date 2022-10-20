@@ -132,10 +132,6 @@ class M0_3_0 extends BaseModelMigration
                 $newKeyTypes[] = $sshKeyTypes[$pubkeytype];
             }
             $tunnel->pubkey_accepted_key_types = implode(',',$newKeyTypes);
-            foreach (explode(',',$tunnel->rekey_limit) as $pubkeytype) {
-                $newKeyTypes[] = $sshKeyTypes[$pubkeytype];
-            }
-            $tunnel->pubkey_accepted_key_types = implode(',',$newKeyTypes);
             $rekeyLimit = (string)$tunnel->rekey_limit;
             $tunnel->rekey_limit = $sshRekeyLimits[$rekeyLimit];
         }
